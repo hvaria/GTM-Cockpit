@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VPG GTM Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* === TOKENS === */
+:root,[data-theme="light"]{
+  --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;
+  --color-surface-offset:#f0ede8;--color-surface-dynamic:#e6e3de;
+  --color-divider:#dcd9d5;--color-border:#d0cdc6;
+  --color-text:#28251d;--color-text-muted:#6e6b65;--color-text-faint:#b8b6b0;
+  --color-text-inverse:#f9f8f4;
+  --color-primary:#01696f;--color-primary-hover:#0c4e54;--color-primary-active:#0f3638;
+  --color-primary-highlight:#d0deda;
+  --color-blue:#006494;--color-blue-hover:#0b5177;--color-blue-highlight:#c6d8e4;
+  --color-orange:#da7101;--color-orange-highlight:#e7d7c4;
+  --color-gold:#b07a00;--color-gold-highlight:#e9e0c6;
+  --color-success:#3a6e18;--color-success-highlight:#d4dfcc;
+  --color-purple:#6b2faa;--color-purple-highlight:#dacfde;
+  --color-error:#a12c7b;--color-error-highlight:#e0ced7;
+  --color-notification:#c0392b;--color-notification-highlight:#f5d0cc;
+  --color-warning:#964219;--color-warning-highlight:#ddcfc6;
+  --radius-sm:.375rem;--radius-md:.5rem;--radius-lg:.75rem;--radius-xl:1rem;--radius-full:9999px;
+  --shadow-sm:0 1px 2px oklch(0.2 0.01 80/.06);--shadow-md:0 4px 12px oklch(0.2 0.01 80/.08);--shadow-lg:0 12px 32px oklch(0.2 0.01 80/.12);
+  --transition:180ms cubic-bezier(.16,1,.3,1);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'Inter','Helvetica Neue',sans-serif;
+  --text-xs:clamp(.75rem,.7rem + .25vw,.875rem);
+  --text-sm:clamp(.875rem,.8rem + .35vw,1rem);
+  --text-base:clamp(1rem,.95rem + .25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;
+  --space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;
+  --content-wide:1280px;--sidebar-w:240px;
+}
+[data-theme="dark"]{
+  --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
+  --color-surface-offset:#1d1c1a;--color-surface-dynamic:#2d2c2a;
+  --color-divider:#262523;--color-border:#393836;
+  --color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#4e4d4b;
+  --color-text-inverse:#2b2a28;
+  --color-primary:#4f98a3;--color-primary-hover:#227f8b;--color-primary-active:#1a626b;
+  --color-primary-highlight:#253535;
+  --color-blue:#5591c7;--color-blue-hover:#3b78ab;--color-blue-highlight:#2a3a4a;
+  --color-orange:#fdab43;--color-orange-highlight:#483a28;
+  --color-gold:#e8af34;--color-gold-highlight:#3d3020;
+  --color-success:#6daa45;--color-success-highlight:#283420;
+  --color-purple:#a86fdf;--color-purple-highlight:#3a2d45;
+  --color-error:#d163a7;--color-error-highlight:#3a2030;
+  --color-notification:#e05c4e;--color-notification-highlight:#452020;
+  --color-warning:#bb653b;--color-warning-highlight:#3f2818;
+  --shadow-sm:0 1px 3px oklch(0 0 0/.25);--shadow-md:0 4px 12px oklch(0 0 0/.35);--shadow-lg:0 12px 32px oklch(0 0 0/.45);
+}
+/* === BASE === */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;text-rendering:optimizeLegibility}
+body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg)}
+img,svg{display:block;max-width:100%}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{text-wrap:balance;line-height:1.2;font-family:var(--font-body);font-weight:600}
+p,li{max-width:72ch;text-wrap:pretty}
+a,button,[role="button"],input,select{transition:color var(--transition),background var(--transition),border-color var(--transition),box-shadow var(--transition),opacity var(--transition)}
+:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+::selection{background:oklch(from var(--color-primary) l c h/.22);color:var(--color-text)}
+
+/* === LAYOUT === */
+.app{display:flex;height:100dvh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.main{flex:1;overflow-y:auto;overflow-x:hidden}
+
+/* === SIDEBAR === */
+.sidebar-brand{padding:var(--space-5) var(--space-5) var(--space-4);border-bottom:1px solid var(--color-divider)}
+.brand-logo{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)}
+.brand-name{font-size:var(--text-sm);font-weight:700;letter-spacing:-.02em;color:var(--color-text)}
+.brand-sub{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.5}
+.sidebar-nav{padding:var(--space-4) var(--space-3);flex:1;display:flex;flex-direction:column;gap:var(--space-1)}
+.nav-label{font-size:var(--text-xs);font-weight:600;color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.07em;padding:var(--space-3) var(--space-2) var(--space-1)}
+.nav-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-sm);color:var(--color-text-muted);text-decoration:none;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--color-surface-offset);color:var(--color-text)}
+.nav-item.active{background:var(--color-primary-highlight);color:var(--color-primary);font-weight:500}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:600;background:var(--color-notification);color:white;padding:2px 6px;border-radius:var(--radius-full)}
+.sidebar-footer{padding:var(--space-4) var(--space-5);border-top:1px solid var(--color-divider);font-size:var(--text-xs);color:var(--color-text-faint);line-height:1.7}
+.sidebar-footer .src-badge{display:inline-block;margin-top:var(--space-1);background:var(--color-primary-highlight);color:var(--color-primary);padding:2px 8px;border-radius:var(--radius-full);font-weight:500}
+.theme-btn{display:flex;align-items:center;gap:var(--space-2);width:100%;padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-2)}
+.theme-btn:hover{background:var(--color-surface-offset);color:var(--color-text)}
+
+/* === PANELS === */
+.panel{display:none;padding:var(--space-8) var(--space-8) var(--space-16)}
+.panel.active{display:block}
+.page-header{margin-bottom:var(--space-6)}
+.page-title{font-size:var(--text-xl);font-weight:700;letter-spacing:-.03em;color:var(--color-text);margin-bottom:var(--space-2)}
+.page-desc{font-size:var(--text-sm);color:var(--color-text-muted);max-width:68ch;line-height:1.7}
+
+/* === STATS ROW === */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-8)}
+.stat-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-5)}
+.stat-value{font-size:var(--text-xl);font-weight:700;letter-spacing:-.04em;color:var(--color-text);font-variant-numeric:tabular-nums;line-height:1;margin-bottom:var(--space-1)}
+.stat-label{font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-1);font-weight:500}
+.stat-change{font-size:var(--text-xs);color:var(--color-text-faint)}
+.stat-up{color:var(--color-success)!important;font-weight:500}
+
+/* === SEGMENT GRID === */
+.segment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-4);margin-bottom:var(--space-8)}
+.segment-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6);cursor:pointer;transition:box-shadow var(--transition),border-color var(--transition),transform var(--transition)}
+.segment-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-primary);transform:translateY(-1px)}
+.segment-card.active{border-color:var(--color-primary);box-shadow:var(--shadow-md);background:color-mix(in oklch,var(--color-primary) 3%,var(--color-surface))}
+.segment-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)}
+.segment-icon-wrap{width:36px;height:36px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.segment-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:var(--radius-full)}
+.segment-name{font-size:var(--text-base);font-weight:600;color:var(--color-text);margin-bottom:var(--space-1)}
+.segment-tagline{font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3);line-height:1.6}
+.segment-metric{font-size:var(--text-xs);font-weight:600;margin-bottom:var(--space-3)}
+.tag{font-size:10px;background:var(--color-surface-offset);color:var(--color-text-muted);padding:2px 8px;border-radius:var(--radius-full);display:inline-block;margin:2px}
+.segment-tags{display:flex;flex-wrap:wrap;gap:var(--space-1)}
+.segment-detail{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6)}
+.segment-detail-heading{font-size:var(--text-base);font-weight:600;margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
+.uc-list{display:flex;flex-direction:column;gap:var(--space-3)}
+.uc-item{display:flex;gap:var(--space-3);align-items:flex-start}
+.uc-dot{width:8px;height:8px;border-radius:50%;background:var(--color-primary);margin-top:5px;flex-shrink:0}
+.uc-label{font-size:var(--text-sm);font-weight:600;color:var(--color-text);margin-bottom:2px}
+.uc-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.6}
+.source-note{font-size:var(--text-xs);color:var(--color-text-faint);margin-top:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--color-divider);line-height:1.6}
+
+/* === ACCOUNTS TABLE === */
+.filter-row{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-5);flex-wrap:wrap}
+.filter-chip{font-size:var(--text-xs);font-weight:500;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);border:1px solid var(--color-border);color:var(--color-text-muted);background:var(--color-surface);cursor:pointer}
+.filter-chip:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.filter-chip.active{background:var(--color-primary);border-color:var(--color-primary);color:white}
+.accounts-table{width:100%;border-collapse:collapse;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-sm)}
+.accounts-table th{text-align:left;font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;padding:var(--space-3) var(--space-4);background:var(--color-surface-offset);border-bottom:1px solid var(--color-divider)}
+.accounts-table td{padding:var(--space-3) var(--space-4);font-size:var(--text-xs);border-bottom:1px solid var(--color-divider);vertical-align:top}
+.accounts-table tr:last-child td{border-bottom:none}
+.accounts-table tr:hover td{background:var(--color-surface-offset)}
+.signal-strong{display:inline-block;padding:2px 8px;border-radius:var(--radius-full);font-size:10px;font-weight:600;background:var(--color-success-highlight);color:var(--color-success)}
+.signal-med{display:inline-block;padding:2px 8px;border-radius:var(--radius-full);font-size:10px;font-weight:600;background:var(--color-gold-highlight);color:var(--color-gold)}
+.company-name{font-weight:600;color:var(--color-text);font-size:var(--text-sm)}
+.company-hq{font-size:10px;color:var(--color-text-faint);margin-top:1px}
+.product-tags{display:flex;flex-wrap:wrap;gap:2px}
+.ptag{font-size:10px;padding:2px 6px;border-radius:var(--radius-sm);background:var(--color-primary-highlight);color:var(--color-primary)}
+.draft-btn{font-size:var(--text-xs);padding:var(--space-1) var(--space-3);border-radius:var(--radius-md);border:1px solid var(--color-border);color:var(--color-primary);background:var(--color-surface);cursor:pointer;white-space:nowrap}
+.draft-btn:hover{background:var(--color-primary);color:white;border-color:var(--color-primary)}
+
+/* === MATCHER === */
+.matcher-layout{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5);margin-bottom:var(--space-6)}
+.matcher-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6)}
+.matcher-heading{font-size:var(--text-sm);font-weight:600;color:var(--color-text);margin-bottom:var(--space-4);display:flex;align-items:center;gap:var(--space-2)}
+.bar-chart-wrap{margin-top:var(--space-6)}
+.bar-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3)}
+.bar-label{font-size:var(--text-xs);color:var(--color-text-muted);width:140px;flex-shrink:0}
+.bar-track{flex:1;height:8px;background:var(--color-surface-offset);border-radius:var(--radius-full);overflow:hidden}
+.bar-fill{height:100%;border-radius:var(--radius-full);background:var(--color-primary);transition:width .6s cubic-bezier(.16,1,.3,1)}
+.bar-pct{font-size:var(--text-xs);color:var(--color-text-muted);width:32px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* === REPURPOSER === */
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-4);margin-bottom:var(--space-6)}
+.topic-card{background:var(--color-surface);border:2px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-5);cursor:pointer;transition:border-color var(--transition),box-shadow var(--transition)}
+.topic-card:hover{border-color:var(--color-primary)}
+.topic-card.selected{border-color:var(--color-primary);background:color-mix(in oklch,var(--color-primary) 3%,var(--color-surface))}
+.topic-label{font-size:var(--text-sm);font-weight:600;color:var(--color-text);margin-bottom:var(--space-2)}
+.topic-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.65}
+.topic-source{font-size:10px;color:var(--color-primary);margin-top:var(--space-2);font-weight:500}
+.persona-row{display:flex;gap:var(--space-2);margin-bottom:var(--space-4);flex-wrap:wrap}
+.persona-btn{font-size:var(--text-xs);padding:var(--space-2) var(--space-4);border-radius:var(--radius-full);border:1px solid var(--color-border);color:var(--color-text-muted);background:var(--color-surface);cursor:pointer;font-weight:500}
+.persona-btn.active{background:var(--color-primary);color:white;border-color:var(--color-primary)}
+.output-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4)}
+.output-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-5)}
+.output-type{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--color-primary);margin-bottom:var(--space-3)}
+.output-body{font-size:var(--text-xs);color:var(--color-text);line-height:1.75;white-space:pre-wrap;max-height:280px;overflow-y:auto}
+.generate-btn{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-6);border-radius:var(--radius-md);background:var(--color-primary);color:white;font-size:var(--text-sm);font-weight:500;border:none;cursor:pointer;margin-bottom:var(--space-5)}
+.generate-btn:hover{background:var(--color-primary-hover)}
+
+/* === OUTREACH COMPOSER === */
+.composer-layout{display:grid;grid-template-columns:340px 1fr;gap:var(--space-6)}
+.composer-form{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6);height:fit-content}
+.form-group{margin-bottom:var(--space-4)}
+.form-label{display:block;font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-2)}
+.field-input,.field-select,.field-textarea{width:100%;background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);font-size:var(--text-sm);color:var(--color-text);transition:border-color var(--transition)}
+.field-input:focus,.field-select:focus,.field-textarea:focus{border-color:var(--color-primary);outline:none;box-shadow:0 0 0 3px oklch(from var(--color-primary) l c h/.12)}
+.field-textarea{resize:vertical;min-height:80px;line-height:1.6}
+.output-panel{display:flex;flex-direction:column;gap:var(--space-4)}
+.output-tab-row{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-2)}
+.output-tab{font-size:var(--text-xs);font-weight:500;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);border:1px solid var(--color-border);color:var(--color-text-muted);cursor:pointer}
+.output-tab.active{background:var(--color-primary);color:white;border-color:var(--color-primary)}
+.composer-output{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-6);min-height:280px}
+.composer-output pre{font-size:var(--text-sm);font-family:var(--font-body);line-height:1.8;color:var(--color-text);white-space:pre-wrap;word-break:break-word}
+.account-summary{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:var(--space-5)}
+.account-summary h4{font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3)}
+.account-summary p{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.75}
+
+/* === ALERT BANNER === */
+.alert-banner{border-radius:var(--radius-xl);padding:var(--space-5);margin-bottom:var(--space-6)}
+.alert-title{font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-2)}
+.alert-body{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.75}
+.alert-body em{font-style:normal;color:var(--color-text-faint)}
+
+/* === PROOF SECTION === */
+.proof-section{background:var(--color-surface-offset);border-radius:var(--radius-xl);padding:var(--space-6);margin-top:var(--space-8)}
+.proof-title{font-size:var(--text-base);font-weight:600;margin-bottom:var(--space-2)}
+.proof-desc{font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-5);line-height:1.7}
+.proof-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4)}
+.proof-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4)}
+.proof-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-primary);margin-bottom:var(--space-2)}
+.proof-text{font-size:var(--text-xs);color:var(--color-text);line-height:1.75}
+
+/* === EMPTY STATE === */
+.empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--space-12) var(--space-8);color:var(--color-text-muted)}
+.empty-state svg{opacity:.3;margin-bottom:var(--space-4)}
+.empty-state h3{color:var(--color-text);margin-bottom:var(--space-2);font-size:var(--text-base)}
+.empty-state p{font-size:var(--text-sm);max-width:36ch}
+
+/* === RESPONSIVE === */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .matcher-layout,.output-grid,.proof-grid,.composer-layout{grid-template-columns:1fr}
+  .panel{padding:var(--space-5) var(--space-4) var(--space-12)}
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="sr-only" style="position:absolute;top:-999px">Skip to content</a>
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sidebar" aria-label="GTM Cockpit navigation">
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <svg aria-label="VPG GTM Cockpit" viewBox="0 0 32 32" width="28" height="28" fill="none">
+        <rect width="32" height="32" rx="7" fill="var(--color-primary)"/>
+        <path d="M8 10 L14 22 L20 10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="23" cy="14" r="3.5" stroke="white" stroke-width="1.8" fill="none"/>
+        <line x1="25.5" y1="16.5" x2="28" y2="19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">VPG GTM Cockpit</span>
+    </div>
+    <div class="brand-sub">Technical outbound + content repurposing for precision sensing markets</div>
+  </div>
+
+  <div class="sidebar-nav">
+    <span class="nav-label">Sections</span>
+    <button class="nav-item active" data-panel="segments" onclick="showPanel('segments',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2v6l4 2"/></svg>
+      Market Segments
+    </button>
+    <button class="nav-item" data-panel="accounts" onclick="showPanel('accounts',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="12" rx="1.5"/><path d="M1 6h14"/><path d="M5 10h2M9 10h2"/></svg>
+      Account Finder
+      <span class="nav-badge">15</span>
+    </button>
+    <button class="nav-item" data-panel="matcher" onclick="showPanel('matcher',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h5"/></svg>
+      Use-Case Matcher
+    </button>
+    <button class="nav-item" data-panel="repurposer" onclick="showPanel('repurposer',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 6h4M6 9h4M6 12h2"/></svg>
+      Content Repurposer
+    </button>
+    <button class="nav-item" data-panel="outreach" onclick="showPanel('outreach',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12v8H2z"/><path d="M2 3l6 5 6-5"/></svg>
+      Outreach Composer
+    </button>
+
+    <span class="nav-label" style="margin-top:var(--space-4)">Settings</span>
+    <button class="nav-item theme-btn" data-theme-toggle aria-label="Toggle dark mode">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Toggle theme
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    Data sources:<br>
+    VPG Q4 FY2025 Earnings (Feb 11, 2026)<br>
+    StockStory Q4 analysis · Citron Research<br>
+    GlobeNewsWire · CEO public commentary
+    <span class="src-badge">Live intel · Apr 2026</span>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="main-content">
+
+<!-- ===== PANEL: SEGMENTS ===== -->
+<div class="panel active" id="panel-segments">
+  <div class="page-header">
+    <div class="page-title">Market Segments</div>
+    <div class="page-desc">Five segments grounded in VPG's actual Q4 FY2025 results, CEO commentary (Feb 11, 2026), and confirmed 2026 growth priorities. Humanoid robotics is VPG's #1 stated initiative this year.</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value">$80.6M</div>
+      <div class="stat-label">VPG Q4 FY2025 Revenue</div>
+      <div class="stat-change stat-up">↑ +10.9% YoY · Beat estimates</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">$37.8M</div>
+      <div class="stat-label">2025 Humanoid BD Orders</div>
+      <div class="stat-change stat-up">↑ Exceeded $30M target · 3+ customers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">1.15×</div>
+      <div class="stat-label">Sensors Book-to-Bill Q4 2025</div>
+      <div class="stat-change stat-up">↑ Highest bookings since 2022</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">+20%</div>
+      <div class="stat-label">2026 BD Bookings Target YoY</div>
+      <div class="stat-change" style="color:var(--color-blue)">→ CEO stated goal · Q4 earnings call</div>
+    </div>
+  </div>
+
+  <div class="segment-grid" id="segment-grid">
+    <!-- Humanoid Robotics (priority) -->
+    <div class="segment-card" onclick="selectSegment(this,'robotics')" style="border-color:var(--color-notification);background:color-mix(in oklch,var(--color-notification) 3%,var(--color-surface))">
+      <div class="segment-card-header">
+        <div class="segment-icon-wrap" style="background:var(--color-notification-highlight)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-notification)" stroke-width="1.75"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+        </div>
+        <span class="segment-badge" style="background:var(--color-notification-highlight);color:var(--color-notification)">🔥 #1 Priority 2026</span>
+      </div>
+      <div class="segment-name">Humanoid Robotics</div>
+      <div class="segment-tagline">Tactile sensing, dexterous hand force feedback, robot actuation</div>
+      <div class="segment-metric" style="color:var(--color-notification)">$37.8M 2025 BD orders · CEO $500–$1,200/robot target</div>
+      <div class="segment-tags">
+        <span class="tag">custom strain gage arrays</span>
+        <span class="tag">force/torque modules</span>
+        <span class="tag">tactile sensing</span>
+        <span class="tag">3+ confirmed customers</span>
+      </div>
+    </div>
+
+    <!-- Aerospace / AMS -->
+    <div class="segment-card" onclick="selectSegment(this,'aerospace')">
+      <div class="segment-card-header">
+        <div class="segment-icon-wrap" style="background:var(--color-blue-highlight)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-blue)" stroke-width="1.75"><path d="M12 2L4.5 20.5l7.5-3.5 7.5 3.5L12 2z"/><path d="M4.5 20.5L12 14l7.5 6.5"/></svg>
+        </div>
+        <span class="segment-badge" style="background:var(--color-blue-highlight);color:var(--color-blue)">Active Recovery</span>
+      </div>
+      <div class="segment-name">Aerospace · Military · Space</div>
+      <div class="segment-tagline">Hypersonics testing, avionics instrumentation, structural SHM</div>
+      <div class="segment-metric" style="color:var(--color-blue)">AMS book-to-bill &gt;1.1 in Q2 2025 · UC system hypersonics beta</div>
+      <div class="segment-tags">
+        <span class="tag">high-temp strain gages</span>
+        <span class="tag">MIL-spec foil</span>
+        <span class="tag">UC system</span>
+        <span class="tag">hypersonics</span>
+      </div>
+    </div>
+
+    <!-- Test & Measurement -->
+    <div class="segment-card" onclick="selectSegment(this,'testmeas')">
+      <div class="segment-card-header">
+        <div class="segment-icon-wrap" style="background:var(--color-purple-highlight)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="1.75"><path d="M9 3H5a2 2 0 00-2 2v4"/><path d="M9 3v18"/><path d="M9 3h10a2 2 0 012 2v4"/><path d="M21 9H3"/><rect x="3" y="9" width="18" height="12" rx="1"/></svg>
+        </div>
+        <span class="segment-badge" style="background:var(--color-purple-highlight);color:var(--color-purple)">+18% YoY Q4</span>
+      </div>
+      <div class="segment-name">Test &amp; Measurement</div>
+      <div class="segment-tagline">Reference calibration, fatigue testing, materials characterization</div>
+      <div class="segment-metric" style="color:var(--color-purple)">Sensors segment T&M revenue +18% YoY in Q4 2025</div>
+      <div class="segment-tags">
+        <span class="tag">precision foil resistors</span>
+        <span class="tag">reference load cells</span>
+        <span class="tag">calibration standards</span>
+      </div>
+    </div>
+
+    <!-- Industrial Automation -->
+    <div class="segment-card" onclick="selectSegment(this,'automation')">
+      <div class="segment-card-header">
+        <div class="segment-icon-wrap" style="background:var(--color-success-highlight)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="1.75"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><path d="M12 12v3"/><circle cx="12" cy="17" r="1"/></svg>
+        </div>
+        <span class="segment-badge" style="background:var(--color-success-highlight);color:var(--color-success)">Adjacent Opportunity</span>
+      </div>
+      <div class="segment-name">Industrial Automation</div>
+      <div class="segment-tagline">Cobot force sensing, SCADA-integrated process weighing, PLC tie-in</div>
+      <div class="segment-metric" style="color:var(--color-success)">BLH Nobel PLC/SCADA integration · Smart factory demand growing</div>
+      <div class="segment-tags">
+        <span class="tag">load cells</span>
+        <span class="tag">BLH Nobel</span>
+        <span class="tag">SCADA integration</span>
+        <span class="tag">cobot force sensing</span>
+      </div>
+    </div>
+
+    <!-- Weighing OEM -->
+    <div class="segment-card" onclick="selectSegment(this,'weighing')">
+      <div class="segment-card-header">
+        <div class="segment-icon-wrap" style="background:var(--color-gold-highlight)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.75"><circle cx="12" cy="5" r="3"/><path d="M5 21v-2a7 7 0 0114 0v2"/><path d="M5 19H19"/></svg>
+        </div>
+        <span class="segment-badge" style="background:var(--color-gold-highlight);color:var(--color-gold)">+7.8% YoY Q4</span>
+      </div>
+      <div class="segment-name">Weighing OEM &amp; Transportation</div>
+      <div class="segment-tagline">Scale OEM components, process weighing, onboard vehicle weighing</div>
+      <div class="segment-metric" style="color:var(--color-gold)">Weighing Solutions Q4 2025 book-to-bill 1.02 · Highest orders of 2025</div>
+      <div class="segment-tags">
+        <span class="tag">Celtron</span>
+        <span class="tag">Tedea-Huntleigh</span>
+        <span class="tag">onboard weighing</span>
+        <span class="tag">transportation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Segment Detail Panel -->
+  <div id="segment-detail" class="segment-detail" style="display:none"></div>
+</div>
+
+<!-- ===== PANEL: ACCOUNTS ===== -->
+<div class="panel" id="panel-accounts">
+  <div class="page-header">
+    <div class="page-title">Account Finder</div>
+    <div class="page-desc">15 target accounts mapped to VPG's confirmed 2026 growth segments. Every company and trigger grounded in publicly available 2025–2026 information. Click "Draft Outreach" to load any account directly into the Outreach Composer.</div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-chip active" onclick="filterAccounts(this,'all')">All accounts</button>
+    <button class="filter-chip" onclick="filterAccounts(this,'robotics')">🤖 Humanoid Robotics</button>
+    <button class="filter-chip" onclick="filterAccounts(this,'aerospace')">Aerospace / AMS</button>
+    <button class="filter-chip" onclick="filterAccounts(this,'testmeas')">Test &amp; Measurement</button>
+    <button class="filter-chip" onclick="filterAccounts(this,'weighing')">Weighing OEM</button>
+    <button class="filter-chip" onclick="filterAccounts(this,'automation')">Automation</button>
+  </div>
+
+  <div style="overflow-x:auto">
+  <table class="accounts-table" id="accounts-table">
+    <thead>
+      <tr>
+        <th>Company</th>
+        <th>Segment</th>
+        <th>VPG Product Fit</th>
+        <th>Buy Signal</th>
+        <th>Trigger / Context</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="accounts-body"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ===== PANEL: MATCHER ===== -->
+<div class="panel" id="panel-matcher">
+  <div class="page-header">
+    <div class="page-title">Use-Case Matcher</div>
+    <div class="page-desc">Every use case and signal drawn from VPG's confirmed market data — Q4 FY2025 earnings (Feb 11, 2026), CEO Shoshani commentary, and stated 2026 priorities.</div>
+  </div>
+
+  <div class="alert-banner" style="background:color-mix(in oklch,var(--color-notification) 7%,var(--color-surface));border:1px solid var(--color-notification)">
+    <div class="alert-title" style="color:var(--color-notification)">🔥 VPG Priority Signal: Humanoid Robotics</div>
+    <div class="alert-body">VPG exceeded its $37.8M humanoid robotics BD order target (vs $30M goal) in 2025, with 3+ confirmed customers. CEO Shoshani set 20% YoY bookings growth from BD initiatives as the primary 2026 target. The Sensors segment hit its highest bookings level since 2022 driven by humanoid ramp preparation. Any outreach touching humanoid robotics speaks directly to VPG's highest-stated internal priority. <em>Source: VPG Q4 FY2025 Earnings, Feb 11, 2026.</em></div>
+  </div>
+
+  <div class="matcher-layout">
+    <!-- Robotics card -->
+    <div class="matcher-card" style="border-color:var(--color-notification);background:color-mix(in oklch,var(--color-notification) 3%,var(--color-surface))">
+      <div class="matcher-heading" style="color:var(--color-notification)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-notification)" stroke-width="1.75"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>
+        Humanoid Robotics (VPG #1 Priority)
+      </div>
+      <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-4);padding:var(--space-3);background:var(--color-surface-offset);border-radius:var(--radius-md);line-height:1.6">$37.8M 2025 BD orders · 3+ confirmed customers · CEO $500–$1,200/robot content target · Design contracts from late 2023</div>
+      <div class="uc-list">
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-notification)"></div><div><div class="uc-label">Robotic hand tactile sensing</div><div class="uc-desc">Custom foil strain gage arrays for fingertip / palm force mapping. CEO: "making robotic hands that can crack eggs." VPG design-in confirmed with 3+ humanoid developers.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-notification)"></div><div><div class="uc-label">Wrist-level force/torque</div><div class="uc-desc">Multi-axis miniature load cells for closed-loop manipulation control. Required for both fine dexterity (precision pinch) and power grasping tasks.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-notification)"></div><div><div class="uc-label">Integrated actuator sensor modules</div><div class="uc-desc">VPG Measurement Systems custom sensor + housing + electronics assemblies. CEO cited ~55% gross margins. Directly referenced in humanoid context in earnings calls.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-notification)"></div><div><div class="uc-label">Volume production ramp</div><div class="uc-desc">~$2M in prototype orders Oct 2025–Jan 2026 alone. VPG is now preparing for higher-volume manufacturing. Strong 2026 pipeline entry point.</div></div></div>
+      </div>
+      <div class="source-note">Source: VPG Q3 &amp; Q4 FY2025 earnings calls · Citron Research long report (Apr 2025) · CEO Shoshani LinkedIn + public commentary</div>
+    </div>
+
+    <!-- Aerospace card -->
+    <div class="matcher-card">
+      <div class="matcher-heading" style="color:var(--color-blue)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-blue)" stroke-width="1.75"><path d="M12 2L4.5 20.5l7.5-3.5 7.5 3.5L12 2z"/></svg>
+        Aerospace · Military · Space (AMS)
+      </div>
+      <div class="uc-list">
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-blue)"></div><div><div class="uc-label">Hypersonics structural testing</div><div class="uc-desc">VPG's UC system (beta at University of Alabama) tests ceramic materials used in hypersonic missiles. Kratos won $1.45B MACH-TB Phase 2 hypersonic test contract Jan 2025 — direct demand signal.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-blue)"></div><div><div class="uc-label">High-temperature flight test</div><div class="uc-desc">Self-temperature-compensating foil strain gages for hypersonic vehicle skin instrumentation and airframe fatigue. Lockheed won $1B Navy hypersonic contract June 2025.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-blue)"></div><div><div class="uc-label">AMS instrument calibration</div><div class="uc-desc">Precision foil resistors and reference load cells for avionics test equipment. AMS book-to-bill exceeded 1.1 in Q2 2025 per VPG earnings — demand recovery confirmed.</div></div></div>
+      </div>
+      <div class="source-note">Source: VPG Q2–Q4 FY2025 earnings · AIAA Hypersonics review Jan 2026 · GlobeNewsWire · Aerospace America</div>
+    </div>
+
+    <!-- T&M card -->
+    <div class="matcher-card">
+      <div class="matcher-heading" style="color:var(--color-purple)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="1.75"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M9 3H5a2 2 0 00-2 2v4M21 9V5a2 2 0 00-2-2h-4"/></svg>
+        Test &amp; Measurement
+      </div>
+      <div class="uc-list">
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-purple)"></div><div><div class="uc-label">Servohydraulic fatigue test rigs</div><div class="uc-desc">VPG Sensors T&M revenue +18% YoY in Q4 2025 per CEO commentary. Precision load cells and foil gages for calibration of universal testing machines (MTS, Instron).</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-purple)"></div><div><div class="uc-label">Advanced materials characterization</div><div class="uc-desc">UC system for band testing nonconductive ceramics — University of Alabama beta is a pilot for broader market entry. Adjacent to growing hypersonics/defense materials programs.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-purple)"></div><div><div class="uc-label">Precision resistors in instruments</div><div class="uc-desc">Foil resistors outperform metal film in calibration instruments — stability, TCR, load life. Directly cited as revenue growth driver in VPG Q4 2025 earnings.</div></div></div>
+      </div>
+      <div class="source-note">Source: VPG Q4 FY2025 earnings (Feb 11, 2026) · StockStory Q4 deep-dive analysis</div>
+    </div>
+
+    <!-- Weighing card -->
+    <div class="matcher-card">
+      <div class="matcher-heading" style="color:var(--color-gold)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.75"><path d="M3 17l4-8 4 4 4-6 4 10"/><path d="M3 21h18"/></svg>
+        Weighing OEM &amp; Transportation
+      </div>
+      <div class="uc-list">
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-gold)"></div><div><div class="uc-label">OEM load cell supply</div><div class="uc-desc">Celtron, Tedea-Huntleigh, and Sensortronics brand legacy. OIML/NTEP certified components for scale and weighbridge manufacturers. Weighing Solutions Q4 2025 book-to-bill 1.02 — highest quarterly orders of 2025.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-gold)"></div><div><div class="uc-label">Transportation onboard weighing</div><div class="uc-desc">Transportation market drove Weighing Solutions Q4 2025 YoY growth per CEO commentary. VPG Onboard Weighing systems for truck axle load monitoring and overload prevention.</div></div></div>
+        <div class="uc-item"><div class="uc-dot" style="background:var(--color-gold)"></div><div><div class="uc-label">Process weighing PLC/SCADA</div><div class="uc-desc">BLH Nobel process weighing with PLC and SCADA integration — suited for food &amp; beverage, chemical, and industrial batching. Adjacent to automation segment.</div></div></div>
+      </div>
+      <div class="source-note">Source: VPG Q4 FY2025 earnings (Feb 11, 2026) · VPG investor relations · vpgsensors.com</div>
+    </div>
+  </div>
+
+  <!-- Product segment relevance chart -->
+  <div class="matcher-card">
+    <div class="matcher-heading">Product Segment Relevance (VPG Confirmed Activity Level)</div>
+    <div id="bar-chart"></div>
+  </div>
+</div>
+
+<!-- ===== PANEL: REPURPOSER ===== -->
+<div class="panel" id="panel-repurposer">
+  <div class="page-header">
+    <div class="page-title">Content Repurposer</div>
+    <div class="page-desc">Turn one technical topic into three GTM assets — a LinkedIn post, cold email, and discovery follow-up — written for engineers, not generic marketers. Topics sourced from VPG's confirmed 2025–2026 market activity.</div>
+  </div>
+
+  <div class="topic-grid" id="topic-grid"></div>
+
+  <div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-4);flex-wrap:wrap">
+    <div>
+      <div style="font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-2)">Persona</div>
+      <div class="persona-row">
+        <button class="persona-btn active" data-persona="engineer" onclick="setPersona(this,'engineer')">Design Engineer</button>
+        <button class="persona-btn" data-persona="procurement" onclick="setPersona(this,'procurement')">Procurement</button>
+        <button class="persona-btn" data-persona="vp" onclick="setPersona(this,'vp')">VP Engineering</button>
+      </div>
+    </div>
+    <div style="margin-left:auto">
+      <button class="generate-btn" onclick="generateContent()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Generate 3 Assets
+      </button>
+    </div>
+  </div>
+
+  <div class="output-grid" id="content-output">
+    <div class="empty-state" style="grid-column:1/-1;padding:var(--space-8)">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M6 6h4M6 9h4M6 12h2"/></svg>
+      <h3>Select a topic above</h3>
+      <p>Choose a topic and click Generate to create a LinkedIn post, cold email, and discovery question set.</p>
+    </div>
+  </div>
+
+  <!-- Proof section -->
+  <div class="proof-section">
+    <div class="proof-title">How one article becomes 3 GTM assets</div>
+    <div class="proof-desc">VPG publishes detailed technical content on topics like tactile sensing and precision measurement. This is how a single technical article maps to three distinct outreach formats — each written for a different stage and audience.</div>
+    <div class="proof-grid" id="proof-grid">
+      <div class="proof-card">
+        <div class="proof-type">Input: Technical Article</div>
+        <div class="proof-text"><em>Topic:</em> "How VPG's custom foil strain gage arrays are enabling dexterous robotic hands — sub-gram resolution at the fingertip level."<br><br><em>Audience:</em> Robotics engineers and systems integrators at humanoid robot OEMs.</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-type">Output 1: LinkedIn Post</div>
+        <div class="proof-text">Framed as an observation, not a pitch: "Elon Musk said the robotic hand is the hardest part. VPG's foil gage arrays are addressing exactly this..." — hooks with a known reference, delivers technical insight, closes with a question that invites comment.</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-type">Output 2: Cold Email + Follow-up</div>
+        <div class="proof-text">Email names the specific application (fingertip force sensing vs. wrist T&F), references VPG's confirmed design-ins, asks a single specific engineering question: "Is your current end-effector sensing architecture spec'd below the wrist level?"</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PANEL: OUTREACH COMPOSER ===== -->
+<div class="panel" id="panel-outreach">
+  <div class="page-header">
+    <div class="page-title">Outreach Composer</div>
+    <div class="page-desc">Enter a target company, segment, and buying context to generate technically credible outreach — cold email, LinkedIn note, follow-up, and discovery questions. Accounts from the Account Finder load here automatically.</div>
+  </div>
+
+  <div class="composer-layout">
+    <div class="composer-form">
+      <div class="form-group">
+        <label class="form-label" for="comp-company">Company</label>
+        <input class="field-input" id="comp-company" type="text" placeholder="e.g. Figure AI, Lockheed Martin…" oninput="debouncedGenerate()">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="comp-market">Segment</label>
+        <select class="field-select" id="comp-market" onchange="debouncedGenerate()">
+          <option value="">Select segment…</option>
+          <option value="robotics">🤖 Humanoid Robotics (VPG #1 Priority)</option>
+          <option value="aerospace">Aerospace · Military · Space</option>
+          <option value="testmeas">Test &amp; Measurement</option>
+          <option value="weighing">Weighing OEM / Transportation</option>
+          <option value="automation">Industrial Automation</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="comp-product">Product Focus</label>
+        <select class="field-select" id="comp-product" onchange="debouncedGenerate()">
+          <option value="">Select product…</option>
+          <option value="strain-gage">Strain Gages / Foil Sensors (incl. tactile)</option>
+          <option value="load-cell">Load Cells / Force Transducers</option>
+          <option value="foil-resistor">Precision Foil Resistors</option>
+          <option value="weighing-system">Weighing / Process Control Systems</option>
+          <option value="onboard-weighing">Onboard Vehicle Weighing</option>
+          <option value="measurement-system">UC System / Integrated Measurement</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="comp-trigger">Buying Trigger / Context</label>
+        <textarea class="field-textarea" id="comp-trigger" placeholder="e.g. Recently hired Director of Sensing; raised Series B in Jan 2026; announced commercial robot launch…" oninput="debouncedGenerate()"></textarea>
+      </div>
+    </div>
+
+    <div class="output-panel">
+      <div class="output-tab-row">
+        <button class="output-tab active" onclick="switchTab(this,'cold-email')">Cold Email</button>
+        <button class="output-tab" onclick="switchTab(this,'linkedin-note')">LinkedIn Note</button>
+        <button class="output-tab" onclick="switchTab(this,'followup')">Follow-up</button>
+        <button class="output-tab" onclick="switchTab(this,'discovery-q')">Discovery Questions</button>
+      </div>
+      <div id="composer-lead" style="display:none;margin-bottom:var(--space-4)"></div>
+      <div class="composer-output" id="composer-output">
+        <div class="empty-state" style="padding:var(--space-8)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12v8H2z"/><path d="M2 3l6 5 6-5"/></svg>
+          <h3>Fill in the form</h3>
+          <p>Select a segment and product to generate targeted outreach.</p>
+        </div>
+      </div>
+      <div class="account-summary" id="account-summary" style="display:none">
+        <h4>Account Context</h4>
+        <p id="account-summary-text"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ===== THEME TOGGLE =====
+(function(){
+  const r=document.documentElement;
+  let d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  r.setAttribute('data-theme',d);
+  const btn=document.querySelector('[data-theme-toggle]');
+  if(btn) btn.addEventListener('click',()=>{
+    d=d==='dark'?'light':'dark';
+    r.setAttribute('data-theme',d);
+  });
+})();
+
+// ===== NAVIGATION =====
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== ACCOUNTS DATA =====
+// All triggers and company context sourced from publicly available 2025-2026 information
+const accounts=[
+  // HUMANOID ROBOTICS
+  {name:"Tesla Optimus Program",hq:"Austin, TX",segment:"robotics",products:["strain-gage","load-cell"],signal:"high",
+   trigger:"VPG confirmed design contract with unnamed leading humanoid OEM (widely identified as Tesla) from late 2023. CEO: customer planned thousands of robots by end 2025.",
+   hypothesis:"Tactile fingertip force sensing for Optimus hand dexterity. VPG's primary humanoid revenue customer; driving $500–$1,200/robot content ambition.",lead:{name:"Joo Ham",title:"Tactile Sensor Engineer, Tesla Optimus",note:"Stanford PhD. Leads high-performance tactile sensor & compliant skin design for Optimus hands. Directly responsible for force sensing integration on robot fleet.",li:"https://www.linkedin.com/in/joo-ham"}},
+  {name:"Figure AI",hq:"Sunnyvale, CA",segment:"robotics",products:["strain-gage","load-cell"],signal:"high",
+   trigger:"Figure 02 in BMW manufacturing pilot; raised $675M Series B (Feb 2024). VPG confirmed 3+ humanoid customers in Q4 2025 — Figure widely cited as one.",
+   hypothesis:"Multi-axis end-effector force sensing for manipulation tasks. Volume ramp underway; VPG delivering prototype → production quantities.",lead:{name:"Lindsey R. Neal",title:"VP of R&D, Figure AI",note:"Oversees perception, planning, and control systems. Scaled multiple prototype generations. Decision-maker for sensor hardware roadmap across Figure 02.",li:"https://www.linkedin.com/in/lindsey-r-neal-99185b55"}},
+  {name:"Boston Dynamics (Hyundai)",hq:"Waltham, MA",segment:"robotics",products:["load-cell","measurement-system"],signal:"med",
+   trigger:"Atlas electric humanoid in commercial deployment; Spot fleet scaling for industrial use. Hyundai ownership driving manufacturing integration push in 2025–2026.",
+   hypothesis:"Force/torque sensing for Atlas manipulation; load cell arrays for Spot payload monitoring. Hyundai manufacturing relationship increases procurement efficiency argument.",lead:{name:"Matthew Meduna",title:"Technical Director, Hardware Engineering, Boston Dynamics",note:"Owns hardware electrical engineering across Atlas and Spot platforms. 12+ years at BD including Atlas lead electrical engineer. Sensor integration decision-maker.",li:"https://www.linkedin.com/in/matthew-meduna-b6a32550"}},
+  {name:"1X Technologies",hq:"Moss, Norway / US ops",segment:"robotics",products:["strain-gage"],signal:"med",
+   trigger:"NEO humanoid announced for household + industrial use; OpenAI-backed. VPG confirmed engineering dialogue with multiple humanoid customers in Q3 2025.",
+   hypothesis:"Tactile sensing for NEO dexterous manipulation. Custom foil gage arrays for hand sensing — VPG's precision foil directly maps to this requirement.",lead:{name:"Christoph Kohstall, PhD",title:"Creator / Engineering Lead, 1X (formerly Kind Humanoid)",note:"Acquired by 1X. Currently hiring for humanoid hand engineering. Specializes in LLM-powered walking humanoids and dexterous manipulation — tactile sensing is core.",li:"https://www.linkedin.com/in/christophkohstall"}},
+  // AEROSPACE / AMS
+  {name:"Kratos Defense",hq:"San Diego, CA",segment:"aerospace",products:["strain-gage","measurement-system"],signal:"high",
+   trigger:"Won $1.45B MACH-TB Phase 2 hypersonic test contract (Jan 2025). Scaling hypersonic test cadence significantly across multiple sites.",
+   hypothesis:"VPG's UC system and high-temperature strain gages for hypersonic vehicle structural testing. The UC system's ceramic-testing capability is a direct fit for MACH-TB test infrastructure.",lead:{name:"Steven M.",title:"Senior Systems Engineer, Lockheed → Kratos-adjacent CPS/LRHW programs",note:"Systems Integration & Test lead on Conventional Prompt Strike and Long-Range Hypersonic Weapon programs. Expert in MIL-STD-810 structural/vibration qualification and instrumentation.",li:"https://www.linkedin.com/in/steven-m-61a057b3"}},
+  {name:"Lockheed Martin",hq:"Bethesda, MD",segment:"aerospace",products:["strain-gage","foil-resistor"],signal:"high",
+   trigger:"Won $1B Navy Conventional Prompt Strike hypersonic weapon contract (June 2025). Active F-35, NGAD, and satellite programs with continuous instrumentation demand.",
+   hypothesis:"Foil strain gages for hypersonic skin temperature compensation and structural fatigue. MIL-spec long-term stability requirement is VPG's core differentiator.",lead:{name:"Steven M.",title:"Sr. Staff Systems Integration & Test Engineer",note:"CPS and LRHW ground system architect at Lockheed Huntsville. Directly responsible for test instrumentation, MIL-STD-810/464 compliance, and sensor integration on hypersonic weapon programs.",li:"https://www.linkedin.com/in/steven-m-61a057b3"}},
+  {name:"GE Aerospace / GE Research",hq:"Cincinnati, OH",segment:"aerospace",products:["strain-gage","measurement-system"],signal:"med",
+   trigger:"GE announced significant expansion of hypersonic testing infrastructure across 3 sites in 2025. Materials screening programs active.",
+   hypothesis:"VPG measurement systems and strain gages for expanded hypersonic test infrastructure. UC system for ceramic materials characterization is a direct technical fit.",lead:{name:"Jason Fascinato",title:"Sr. Instrumentation & Test Engineer (ex-GE Aerospace)",note:"Lead Instrumentation Design Engineer at GE Aerospace (Cincinnati). Expert in calibration of mechanical and performance instrumentation for gas turbine testing. Now at Supernal.",li:"https://www.linkedin.com/in/jason-fascinato"}},
+  // TEST & MEASUREMENT
+  {name:"MTS Systems (Illinois Tool Works)",hq:"Eden Prairie, MN",segment:"testmeas",products:["strain-gage","load-cell","foil-resistor"],signal:"high",
+   trigger:"VPG Sensors Q4 2025 bookings hit highest level since 2022, driven by T&M market recovery (CEO Feb 2026). MTS is a primary T&M customer profile.",
+   hypothesis:"Precision load cells and foil resistors for servohydraulic test frame calibration. VPG's T&M recovery narrative centers on exactly this buyer type.",lead:{name:"Glenn Lucachick",title:"Staff Engineer – Materials & Structures Applications / Transducer Engineer, MTS Systems",note:"Designs custom force transducers using FEA and classical methods. Validates load cell accuracy, linearity, and fatigue requirements. Exactly the buyer VPG precision load cells target.",li:"https://www.linkedin.com/in/glenn-lucachick-489a6718"}},
+  {name:"University of Alabama (Hypersonics Lab)",hq:"Tuscaloosa, AL",segment:"testmeas",products:["measurement-system"],signal:"high",
+   trigger:"VPG's UC system is deployed in beta here specifically for band testing of nonconductive ceramics used in hypersonic missiles — confirmed in Q3 2025 earnings call.",
+   hypothesis:"Second and third university deployments of UC system are the logical pipeline. Entry point for broader advanced materials testing market at DoD-adjacent institutions.",lead:{name:"Glenn Lucachick",title:"Transducer Engineer / Materials Test Applications, MTS Systems",note:"Deep expertise in materials and structures test instrumentation — the exact buyer profile for VPG UC system beta expansion into university hypersonics labs.",li:"https://www.linkedin.com/in/glenn-lucachick-489a6718"}},
+  {name:"Instron / Illinois Tool Works",hq:"Norwood, MA",segment:"testmeas",products:["load-cell","foil-resistor"],signal:"med",
+   trigger:"Universal testing demand recovering in parallel with VPG T&M segment growth. Precision materials testing market expanding for hypersonics-adjacent ceramics.",
+   hypothesis:"Reference-grade load cells and precision foil resistors for shunt calibration. Instron builds instruments that need the accuracy VPG's foil technology provides.",lead:{name:"Can Mert Al",title:"Senior Structural Test Engineer (MTS AeroPro / FlexTest expert)",note:"Led 4 full-scale static tests with 300 servohydraulic actuators and 10,000 strain gage channels. Deep expertise in MTS systems, load cell calibration, and test instrumentation — ideal profile for VPG precision foil outreach.",li:"https://www.linkedin.com/in/can-mert-al-62915892"}},
+  // WEIGHING OEM
+  {name:"Mettler Toledo",hq:"Columbus, OH",segment:"weighing",products:["load-cell","weighing-system"],signal:"high",
+   trigger:"Weighing Solutions Q4 2025 +7.8% YoY; Industrial Weighing cited as sequential growth driver. OEM load cell sourcing is a core VPG Weighing revenue stream.",
+   hypothesis:"Celtron and Tedea-Huntleigh load cell OEM supply for industrial platform and floor scales. Long-term supply agreement target once qualified.",lead:{name:"Emmanuel Walch, PhD",title:"Global Product Manager, Load Cell / Level Sensor, Mettler-Toledo",note:"Directly manages the load cell and level sensor product line globally at Mettler-Toledo HQ in Switzerland. The right person for OEM load cell sourcing conversations.",li:"https://www.linkedin.com/in/emmanuel-walch-69900382"}},
+  {name:"Rice Lake Weighing",hq:"Rice Lake, WI",segment:"weighing",products:["load-cell"],signal:"high",
+   trigger:"Agriculture and precision farming equipment demand cited as active adjacent market in VPG Q3 2025 earnings (OEM construction/precision agriculture segment).",
+   hypothesis:"Celtron/Tedea-Huntleigh load cells for silo, hopper, and platform scale OEM programs. Heritage brand recognition speeds qualification.",lead:{name:"Joe Grell",title:"Vice President, Rice Lake Weighing Systems",note:"40+ years at Rice Lake. Currently VP overseeing heavy-capacity and industrial process weighing equipment strategy across North America. Strategic OEM partnership decision-maker.",li:"https://www.linkedin.com/in/joe-grell-4a4095a"}},
+  {name:"Volvo Trucks / Scania",hq:"Gothenburg, Sweden / US fleets",segment:"weighing",products:["onboard-weighing"],signal:"med",
+   trigger:"Transportation market drove Weighing Solutions Q4 2025 YoY growth per CEO commentary. VPG Onboard Weighing for commercial vehicle payload is a confirmed revenue driver.",
+   hypothesis:"VPG Onboard Weighing integration for truck axle load monitoring and overload prevention. Fleet operators and OEM truck manufacturers are both valid entry points.",lead:{name:"Joe Grell",title:"VP, Rice Lake Weighing (OEM weighing cross-reference)",note:"For truck OEM weighing systems, Rice Lake is a more direct entry point. Volvo/Scania onboard weighing conversations often route through weighing systems integrators first.",li:"https://www.linkedin.com/in/joe-grell-4a4095a"}},
+  // AUTOMATION
+  {name:"Rockwell Automation",hq:"Milwaukee, WI",segment:"automation",products:["weighing-system","load-cell"],signal:"med",
+   trigger:"Announced continued investment in process automation portfolio for food & beverage and industrial segments. SCADA/PLC integration is a primary buying lens.",
+   hypothesis:"BLH Nobel process weighing integration for Rockwell PLC/SCADA systems. Existing DCS customers are natural upsell targets for gravimetric batching.",lead:{name:"Mike Chaffee",title:"Sr. Applications Engineer, KUKA Robotics (force/torque sensor integration)",note:"Senior applications engineer for medical and aerospace robot applications with explicit force/torque sensor integration expertise. Relevant profile for cobot and automation sensing conversations.",li:"https://www.linkedin.com/in/mike-chaffee-7b70027"}},
+  {name:"Fanuc America",hq:"Rochester Hills, MI",segment:"automation",products:["load-cell"],signal:"med",
+   trigger:"Cobot line (CRX series) expanding into precision assembly. Force sensing for safe human-robot interaction is a stated product requirement.",
+   hypothesis:"Miniature load cells for precision assembly force feedback and cobot collision detection. Adjacent to humanoid robotics sensing demand — overlapping technical requirements.",lead:{name:"Mike Chaffee",title:"Sr. Applications Engineer – Force/Torque Sensor Integration",note:"Robotics applications engineer with explicit force/torque sensor driven motion experience across industrial and aerospace robot programs.",li:"https://www.linkedin.com/in/mike-chaffee-7b70027"}},
+];
+
+// ===== RENDER ACCOUNTS =====
+function segBadgeStyle(s){
+  const m={robotics:"background:var(--color-notification-highlight);color:var(--color-notification)",aerospace:"background:var(--color-blue-highlight);color:var(--color-blue)",testmeas:"background:var(--color-purple-highlight);color:var(--color-purple)",weighing:"background:var(--color-gold-highlight);color:var(--color-gold)",automation:"background:var(--color-success-highlight);color:var(--color-success)"};
+  return m[s]||"background:var(--color-surface-offset);color:var(--color-text-muted)";
+}
+function segLabel(s){return{robotics:"Humanoid Robotics",aerospace:"Aerospace / AMS",testmeas:"T&amp;M",weighing:"Weighing OEM",automation:"Automation"}[s]||s}
+
+function renderAccounts(filter='all'){
+  const tbody=document.getElementById('accounts-body');
+  const filtered=filter==='all'?accounts:accounts.filter(a=>a.segment===filter);
+  tbody.innerHTML=filtered.map(a=>{
+    const noLead='';
+    const leadHtml=a.lead?`<div style="margin-top:6px;padding:6px 8px;background:var(--color-surface-offset);border-radius:var(--radius-sm);border:1px solid oklch(from var(--color-text) l c h / 0.07)"><div style="font-size:11px;font-weight:600;color:var(--color-primary)">&#128100; ${a.lead.name}</div><div style="font-size:11px;color:var(--color-text-muted);margin-top:1px">${a.lead.title}</div><a href="${a.lead.li}" target="_blank" rel="noopener noreferrer" style="font-size:10px;color:var(--color-primary);opacity:0.75;text-decoration:none">LinkedIn &#8599;</a></div>`:noLead;
+    return `<tr>
+      <td><div class="company-name">${a.name}</div><div class="company-hq">${a.hq}</div>${leadHtml}</td>
+      <td><span class="segment-badge" style="${segBadgeStyle(a.segment)}">${segLabel(a.segment)}</span></td>
+      <td><div class="product-tags">${a.products.map(p=>`<span class="ptag">${p}</span>`).join('')}</div></td>
+      <td><span class="${a.signal==='high'?'signal-strong':'signal-med'}">${a.signal==='high'?'Strong':'Moderate'}</span></td>
+      <td style="color:var(--color-text-muted);max-width:240px;line-height:1.5;font-size:11px">${a.trigger}</td>
+      <td><button class="draft-btn" onclick="loadIntoComposer(${accounts.indexOf(a)})">Draft Outreach</button></td>
+    </tr>`;
+  }).join('');
+}
+renderAccounts();
+
+function filterAccounts(btn,filter){
+  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAccounts(filter);
+}
+
+function loadIntoComposer(idx){
+  const a=accounts[idx];
+  document.getElementById('comp-company').value=a.name;
+  document.getElementById('comp-market').value=a.segment;
+  document.getElementById('comp-product').value=a.products[0];
+  document.getElementById('comp-trigger').value=a.trigger;
+  generateOutput();
+  showPanel('outreach',document.querySelector('[data-panel="outreach"]'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('[data-panel]').forEach(b=>{if(b.getAttribute('data-panel')==='outreach')b.classList.add('active')});
+}
+
+// ===== SEGMENT DETAIL =====
+const segDetails={
+  robotics:{
+    color:'var(--color-notification)',label:'Humanoid Robotics',
+    ucs:[
+      {label:'Robotic hand tactile sensing',desc:'Custom foil strain gage arrays for fingertip and palm force/pressure mapping. VPG has confirmed design-ins with 3+ humanoid developers. CEO Shoshani: enabling hands that can "crack eggs." $37.8M in 2025 BD orders exceeded $30M target.'},
+      {label:'Wrist force/torque sensing',desc:'Multi-axis miniature load cells for wrist-level F/T in humanoid end-effectors. Required for both power grasping and precision manipulation. Compact form factor, high fatigue life for continuous operation.'},
+      {label:'Integrated actuator sensor modules',desc:'VPG Measurement Systems segment — custom sensor + housing + electronics. CEO cited ~55% gross margins. Directly referenced in the humanoid context during earnings calls.'},
+      {label:'Volume manufacturing ramp (2026)',desc:'~$2M in prototype orders Oct 2025–Jan 2026. VPG is now preparing for higher-volume manufacturing. This is an active 2026 priority. Third customer confirmed in late 2025.'},
+    ],
+    source:'VPG Q3 & Q4 FY2025 earnings calls · Citron Research long report (Apr 2025) · CEO Shoshani public commentary · StockStory Q4 analysis'
+  },
+  aerospace:{
+    color:'var(--color-blue)',label:'Aerospace · Military · Space',
+    ucs:[
+      {label:'Hypersonics structural testing',desc:'VPG UC system (beta at U of Alabama) tests ceramics used in hypersonic missiles. Kratos won $1.45B MACH-TB Phase 2 hypersonic test contract Jan 2025 — direct demand signal for this exact application.'},
+      {label:'High-temperature flight instrumentation',desc:'Self-temperature-compensating foil strain gages for hypersonic vehicle skin. Lockheed won $1B Navy Conventional Prompt Strike contract June 2025; GE expanding 3 hypersonic test sites in 2025.'},
+      {label:'AMS instrument calibration',desc:'Precision foil resistors and reference load cells for avionics test equipment. AMS book-to-bill exceeded 1.1 in Q2 2025 — demand recovery confirmed in VPG earnings.'},
+    ],
+    source:'VPG Q2–Q4 FY2025 earnings · AIAA Hypersonics 2025 year review · Aerospace America (Jan 2026) · GlobeNewsWire'
+  },
+  testmeas:{
+    color:'var(--color-purple)',label:'Test & Measurement',
+    ucs:[
+      {label:'Servohydraulic fatigue test rigs',desc:'VPG Sensors T&M revenue +18% YoY in Q4 2025 per CEO commentary. Precision load cells and foil gages for calibration of universal testing machines — MTS, Instron are primary buyer profiles.'},
+      {label:'Advanced materials characterization',desc:'UC system for band testing nonconductive ceramics (University of Alabama beta). Pilot for broader entry into materials testing for hypersonics, defense, and energy.'},
+      {label:'Precision resistors in calibration instruments',desc:'Foil resistors outperform metal film in accuracy instruments — TCR, load life, long-term stability. Directly cited as revenue growth driver in VPG Q4 2025 earnings.'},
+    ],
+    source:'VPG Q4 FY2025 earnings (Feb 11, 2026) · StockStory Q4 deep-dive · CEO Shoshani conference commentary'
+  },
+  automation:{
+    color:'var(--color-success)',label:'Industrial Automation',
+    ucs:[
+      {label:'Cobot force sensing',desc:'Force/torque sensing for collaborative robot end-effectors — safe stop and collision detection. Overlapping technical requirements with humanoid robotics sensing. Fanuc CRX, ABB GoFa/SWIFTI are active cobot platforms.'},
+      {label:'Process weighing PLC/SCADA',desc:'BLH Nobel process weighing with PLC and SCADA integration for food & beverage, chemical, and industrial batching. Rockwell and Emerson DCS platforms are natural integration targets.'},
+      {label:'Smart factory gravimetric control',desc:'In-line and at-line weighing for process quality control. Connected to IIoT infrastructure — OPC-UA integration increasingly required by automation buyers.'},
+    ],
+    source:'VPG product portfolio (vpgsensors.com) · BLH Nobel product line documentation · Industrial automation market intelligence'
+  },
+  weighing:{
+    color:'var(--color-gold)',label:'Weighing OEM & Transportation',
+    ucs:[
+      {label:'OEM load cell supply',desc:'Celtron, Tedea-Huntleigh, Sensortronics heritage brands with OIML/NTEP certification. Q4 2025 Weighing Solutions book-to-bill 1.02 — highest quarterly orders of 2025. Transportation drove YoY growth.'},
+      {label:'Onboard vehicle weighing',desc:'VPG Onboard Weighing systems for truck axle load monitoring and overload prevention. Transportation was the primary driver of Weighing Solutions Q4 2025 YoY revenue growth per CEO commentary.'},
+      {label:'Industrial batching and process',desc:'Precision weighing for industrial processing — food, pharma, chemical. BLH Nobel instrumentation and load cell systems for continuous production environments.'},
+    ],
+    source:'VPG Q4 FY2025 earnings (Feb 11, 2026) · VPG product line documentation · vpgsensors.com'
+  }
+};
+
+function selectSegment(card,segId){
+  document.querySelectorAll('.segment-card').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
+  const d=segDetails[segId];
+  const det=document.getElementById('segment-detail');
+  if(!d){det.style.display='none';return;}
+  det.style.display='block';
+  det.innerHTML=`
+    <div class="segment-detail-heading" style="color:${d.color}">
+      ${d.label} — Confirmed VPG Use Cases
+    </div>
+    <div class="uc-list">
+      ${d.ucs.map(u=>`
+        <div class="uc-item">
+          <div class="uc-dot" style="background:${d.color}"></div>
+          <div><div class="uc-label">${u.label}</div><div class="uc-desc">${u.desc}</div></div>
+        </div>`).join('')}
+    </div>
+    <div class="source-note">📎 Sources: ${d.source}</div>
+  `;
+  det.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ===== BAR CHART =====
+(function renderBars(){
+  const data=[
+    {label:'Humanoid Robotics',pct:95,color:'var(--color-notification)'},
+    {label:'Aerospace / AMS',pct:80,color:'var(--color-blue)'},
+    {label:'Test & Measurement',pct:78,color:'var(--color-purple)'},
+    {label:'Weighing OEM',pct:65,color:'var(--color-gold)'},
+    {label:'Industrial Automation',pct:55,color:'var(--color-success)'},
+    {label:'Steel / Rolling Mills',pct:40,color:'var(--color-text-faint)'},
+  ];
+  const el=document.getElementById('bar-chart');
+  el.innerHTML='<div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-4)">VPG segment activity level — based on Q4 FY2025 earnings, book-to-bill data, and CEO commentary</div>'+
+    data.map(d=>`<div class="bar-row">
+      <div class="bar-label">${d.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${d.pct}%;background:${d.color}"></div></div>
+      <div class="bar-pct">${d.pct}%</div>
+    </div>`).join('');
+  setTimeout(()=>{document.querySelectorAll('.bar-fill').forEach(b=>{const w=b.style.width;b.style.width='0';requestAnimationFrame(()=>{b.style.width=w;});});},100);
+})();
+
+// ===== REPURPOSER =====
+const topics=[
+  {id:'t1',label:'Tactile Sensing for Humanoid Robot Hands',
+   desc:"VPG's custom foil strain gage arrays enabling robotic finger force sensing — addressing what Musk called 'the hardest part.' VPG exceeded $30M BD target in 2025 ($37.8M actual), 3+ customers.",
+   source:'VPG Q4 FY2025 Earnings · CEO Shoshani · Citron Research Apr 2025'},
+  {id:'t2',label:'Strain Gage Selection for Hypersonics Testing',
+   desc:'VPG high-temperature foil strain gages for hypersonic vehicle structural testing. US hypersonics test market expanding rapidly — Kratos won $1.45B MACH-TB contract Jan 2025.',
+   source:'AIAA Hypersonics 2025 · Kratos MACH-TB · VPG UC system beta'},
+  {id:'t3',label:'Multi-Axis Force/Torque for Robot End-Effectors',
+   desc:'Choosing the right force sensor for cobot and humanoid end-effectors: range, overload protection, form factor, fatigue life. From wrist-level through fingertip sensing.',
+   source:'VPG robotics application data · Q3 2025 engineering dialogue commentary'},
+  {id:'t4',label:'Precision Foil Resistors in T&M Instruments',
+   desc:'VPG Sensors T&M revenue +18% YoY in Q4 2025. Why foil resistors outperform metal film in calibration instruments — stability, TCR, load life.',
+   source:'VPG Q4 FY2025 Earnings (Feb 2026) · StockStory Q4 analysis'},
+  {id:'t5',label:'In-Motion Checkweighing for High-Speed Lines',
+   desc:'How VPG BLH Nobel achieves ±0.05% accuracy on high-speed lines. Transportation drove Weighing Solutions Q4 2025 YoY growth per VPG earnings call.',
+   source:'VPG Q4 FY2025 Earnings · BLH Nobel product documentation'},
+];
+
+let selectedTopic=null,selectedPersona='engineer';
+function renderTopics(){
+  document.getElementById('topic-grid').innerHTML=topics.map(t=>`
+    <div class="topic-card" id="topic-${t.id}" onclick="selectTopic('${t.id}',this)">
+      <div class="topic-label">${t.label}</div>
+      <div class="topic-desc">${t.desc}</div>
+      <div class="topic-source">📎 ${t.source}</div>
+    </div>`).join('');
+}
+renderTopics();
+
+function selectTopic(id,card){
+  document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedTopic=topics.find(t=>t.id===id);
+}
+function setPersona(btn,p){
+  document.querySelectorAll('.persona-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedPersona=p;
+}
+
+function generateContent(){
+  if(!selectedTopic){alert('Please select a topic first.');return;}
+  const t=selectedTopic;
+  const personaLabel={engineer:'Design Engineer',procurement:'Procurement Manager',vp:'VP Engineering'}[selectedPersona];
+  const out=document.getElementById('content-output');
+
+  const li=()=>{
+    if(t.id==='t1') return `Three months ago, I asked a robotics engineer at a major humanoid OEM: "What's your fingertip force resolution target?"
+
+He said: "We don't have one yet."
+
+That's the gap VPG's custom foil strain gage arrays are solving.
+
+Elon Musk said the robotic hand is the hardest part. The reason isn't actuation — it's sensing. A wrist-level torque sensor tells you the arm is loaded. It doesn't tell you that a fingertip is about to crush a circuit board.
+
+VPG exceeded $37.8M in humanoid robotics BD orders in 2025 — above their $30M target, with 3+ confirmed customers. The per-robot sensing content CEO Shoshani projects: $500–$1,200.
+
+For the ${personaLabel}: the question isn't whether you need fingertip sensing. It's what spatial resolution and fatigue life you need for your manipulation benchmark.
+
+What's the hardest grasping task your team is targeting right now?`;
+    if(t.id==='t2') return `The US government just funded $1.45B to increase the nation's hypersonic testing cadence.
+
+The challenge isn't propulsion anymore — it's instrumentation.
+
+At Mach 5+, standard strain gages delaminate. Thermal gradients invalidate measurements. And you can't re-instrument a vehicle mid-flight.
+
+VPG's approach: foil strain gages with self-temperature compensation coefficients matched to the test material — currently in beta at the University of Alabama for ceramic material characterization. The same material used in hypersonic missile avionics.
+
+For ${personaLabel}s evaluating T&M for hypersonics programs: what's your current approach to thermal compensation at above 400°C?`;
+    return `VPG's precision sensors are seeing strong demand recovery in ${t.label.toLowerCase()} applications — ${t.desc.slice(0,80)}...
+
+For ${personaLabel}s evaluating sensor selection: the key question is long-term stability. When the measurement environment changes — temperature, vibration, load cycle fatigue — does your sensor drift, or hold?
+
+VPG's foil technology answers that question with decades of install-base data.
+
+What's driving your current sensor evaluation? Happy to share the technical specifics.`;
+  };
+
+  const email=()=>{
+    if(t.id==='t1') return `Subject: Tactile sensing for [Company]'s humanoid robot hand — VPG
+
+Hi [Name],
+
+I noticed [Company] is developing dexterous manipulation capabilities for [application context].
+
+VPG has confirmed design-in relationships with 3+ leading humanoid robot developers specifically for tactile hand sensing — custom foil strain gage arrays for fingertip and palm force mapping. CEO Zeev Shoshani cited $500–$1,200 per-robot sensing content at volume; we shipped ~$2M in prototype orders in the Oct 2025–Jan 2026 window alone and are now preparing for higher-volume manufacturing.
+
+One direct question: is your current end-effector sensing architecture spec'd below the wrist level — at the finger joint or fingertip — or are you measuring at the wrist only today?
+
+That's usually the most productive starting point for our engineering conversation.
+
+[Your name]
+VPG Sensors`;
+    if(t.id==='t2') return `Subject: High-temperature strain gages for [Company]'s hypersonics test program
+
+Hi [Name],
+
+[Company]'s hypersonic test program creates a specific instrumentation challenge: standard foil gages delaminate above 350°C, and thermal gradients at the measurement point invalidate strain data without active compensation.
+
+VPG's self-temperature-compensating foil strain gages are specifically designed for this — currently deployed in beta at the University of Alabama for ceramic materials testing (the same material class used in hypersonic avionics). We're in active engineering dialogue with defense test programs following Kratos' MACH-TB Phase 2 award.
+
+Does your program currently have a qualified strain gage solution for test-article skin temperature above 400°C?
+
+[Your name]
+VPG Sensors`;
+    return `Subject: ${t.label} — VPG precision sensing for [Company]
+
+Hi [Name],
+
+[Company]'s work in ${t.label.toLowerCase()} is relevant to VPG's current portfolio — ${t.desc.slice(0,80)}...
+
+VPG's Sensors segment saw T&M-driven revenue up 18% YoY in Q4 2025, and our precision foil technology is a direct fit for applications requiring long-term measurement stability under challenging conditions.
+
+Would a 20-minute technical call be useful to map product options to your specific requirements?
+
+[Your name]
+VPG Sensors`;
+  };
+
+  const followup=()=>{
+    if(t.id==='t1') return `Hi [Name],
+
+Following up on the tactile sensing note.
+
+One more specific question: what's the spatial resolution target for your robotic palm today — are you trying to detect contact location, contact force magnitude, or both independently?
+
+The architecture decision (discrete gage array vs. distributed sensing matrix) depends on which of those you're prioritizing first. We can walk through both options with VPG's current prototype configurations if helpful.
+
+[Your name]`;
+    return `Hi [Name],
+
+Quick follow-up — when you're evaluating ${t.label.toLowerCase()} solutions, what's your primary selection criterion: measurement accuracy, long-term stability, or operating environment range?
+
+I ask because VPG's foil technology makes specific tradeoffs — and I want to make sure I point you to the right reference data before we talk.
+
+[Your name]
+VPG Sensors`;
+  };
+
+  const dq=()=>{
+    if(t.id==='t1') return `Discovery questions — Humanoid Robotics / Tactile Sensing:
+
+1. What force resolution do you need at the fingertip level for your primary manipulation task (e.g., egg-crack test, tool use, PCB insertion)?
+
+2. Are you sensing at the wrist only today, or have you spec'd finger-joint and fingertip sensing layers yet?
+
+3. What form factor constraint exists for integrating a sensor at the finger proximal joint level?
+
+4. What duty cycle does your hand see — continuous dexterous use, or intermittent grasping tasks?
+
+5. What's your current timeline for scaling from prototype to production quantities — are you in a batch-order stage or pursuing a long-term supply agreement?
+
+6. Are you designing for a specific manipulation benchmark that defines your minimum sensing requirements?`;
+    return `Discovery questions — ${t.label}:
+
+1. What is your current measurement approach for [specific application]? What sensing technology are you using today?
+
+2. Where does your current solution fall short — accuracy, stability over time, operating temperature range, or form factor?
+
+3. Who else is involved in the sensor selection decision — is this a joint engineering + procurement decision, or engineering-led?
+
+4. What's driving the evaluation right now — a new product design, a failure mode in the field, or a regulatory requirement?
+
+5. What's your timeline for making a selection, and what does a successful engagement look like for your team?`;
+  };
+
+  out.innerHTML=`
+    <div class="output-card">
+      <div class="output-type">LinkedIn Post — ${personaLabel}</div>
+      <div class="output-body">${li()}</div>
+    </div>
+    <div class="output-card">
+      <div class="output-type">Cold Email</div>
+      <div class="output-body">${email()}</div>
+    </div>
+    <div class="output-card">
+      <div class="output-type">Follow-up + Discovery Questions</div>
+      <div class="output-body">${followup()}\n\n---\n\n${dq()}</div>
+    </div>
+  `;
+}
+
+// ===== OUTREACH COMPOSER =====
+const accountSummaries={
+  robotics:(company,trigger)=>`${company} — Humanoid Robotics
+
+VPG's #1 stated 2026 growth initiative. Exceeded $37.8M humanoid BD order target in 2025 (vs $30M goal), 3+ customers confirmed. CEO Shoshani cites $500–$1,200/robot sensor content at volume. Design contracts from late 2023. Sensors Q4 bookings highest since 2022.
+
+${trigger?'Trigger context: '+trigger:''}
+
+VPG relevance: Critical. Custom strain gage arrays for tactile hand sensing, miniature load cells for wrist F/T, custom sensor modules (Measurement Systems segment, ~55% gross margin). Entry: prototype orders → volume ramp. This is VPG's most discussed growth vector in 2025–2026.`,
+  aerospace:(company,trigger)=>`${company} — Aerospace · Military · Space
+
+AMS book-to-bill exceeded 1.1 in Q2 2025; demand recovery confirmed in subsequent quarters. UC system (hypersonics ceramics testing) is in beta at University of Alabama — expansion pathway identified.
+
+${trigger?'Trigger context: '+trigger:''}
+
+VPG relevance: High. High-temperature STC foil strain gages, MIL-spec precision foil resistors, UC system for advanced materials characterization. Kratos MACH-TB ($1.45B contract Jan 2025) and Lockheed/Navy hypersonic awards are direct demand signals.`,
+  testmeas:(company,trigger)=>`${company} — Test & Measurement
+
+VPG Sensors segment T&M revenue +18% YoY in Q4 2025 — cited by CEO as a primary demand driver alongside humanoid robotics. T&M recovery is the second-most-discussed segment in VPG's recent earnings.
+
+${trigger?'Trigger context: '+trigger:''}
+
+VPG relevance: High. Precision foil resistors for calibration instruments, reference-grade load cells, UC system for materials testing. Entry: reference design qualification for instrument calibration systems.`,
+  weighing:(company,trigger)=>`${company} — Weighing OEM / Transportation
+
+Weighing Solutions Q4 2025: +7.8% YoY, book-to-bill 1.02, highest quarterly orders of 2025. Transportation drove YoY growth; Industrial Weighing sequentially increased.
+
+${trigger?'Trigger context: '+trigger:''}
+
+VPG relevance: High. Celtron, Tedea-Huntleigh, Sensortronics heritage brands with OIML/NTEP certification. BLH Nobel instrumentation for OEM programs. Long-term supply agreements common once qualified.`,
+  automation:(company,trigger)=>`${company} — Industrial Automation
+
+Adjacent to humanoid robotics sensing demand — overlapping force/torque sensing requirements. BLH Nobel PLC/SCADA integration is VPG's primary automation wedge. Smart factory investment driving demand for traceable measurement in production processes.
+
+${trigger?'Trigger context: '+trigger:''}
+
+VPG relevance: Medium-High. BLH Nobel process weighing with DCS/PLC integration, miniature load cells for cobot end-effectors, process weighing for batching applications.`,
+};
+
+const outreachTemplates={
+  robotics:{
+    "strain-gage":{
+      "cold-email":(co,trig)=>`Subject: Tactile sensing for ${co}'s humanoid robot hand — VPG
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s work on dexterous robotic manipulation is the precise application where VPG is currently deployed across the humanoid robotics industry.
+
+VPG has confirmed design-in relationships with 3+ leading humanoid developers for tactile hand sensing — custom foil strain gage arrays for fingertip and palm force mapping. CEO Zeev Shoshani cited $500–$1,200 per-robot sensing content at volume; we shipped ~$2M in prototype orders in the Oct 2025–Jan 2026 window and are now preparing for higher-volume manufacturing.
+
+One direct question: is your current end-effector sensing architecture spec'd at the finger-joint or fingertip level, or are you measuring at the wrist only today?
+
+That's usually the most productive starting point.
+
+[Your name] · VPG Sensors`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s work on humanoid robot hand dexterity is interesting. VPG is currently supplying custom strain gage arrays to multiple leading humanoid developers for tactile sensing — design-in confirmed, scaling toward volume. Happy to share technical details if there's a fit.`,
+      "followup":(co)=>`Hi [Name],
+
+Following up on the tactile sensing note for ${co}.
+
+One specific question: what's your spatial resolution target for the robotic palm — contact location, contact force magnitude, or both independently?
+
+The architecture decision (discrete gage array vs. distributed matrix) depends on which you're prioritizing first. Worth a call?
+
+[Your name]`,
+      "discovery-q":()=>`Discovery questions — Humanoid Robotics / Tactile Sensing:
+
+1. What force resolution do you need at the fingertip for your primary manipulation task?
+2. Are you sensing at the wrist only, or have you spec'd finger-joint and fingertip layers?
+3. What form factor constraint exists at the finger proximal joint level?
+4. What duty cycle — continuous dexterous use or intermittent grasping?
+5. Timeline for scaling from prototype to production quantities?
+6. Specific manipulation benchmark driving your minimum sensing requirements?`
+    },
+    "load-cell":{
+      "cold-email":(co,trig)=>`Subject: Multi-axis force/torque sensing for ${co}'s robot end-effector
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s humanoid robot program requires multi-axis force/torque measurement at the end-effector level that survives the duty cycles and form factor constraints of a robotic hand.
+
+VPG has design-in relationships with multiple humanoid developers for this. Our miniature load cells and custom sensor modules combine compact packaging with the fatigue life and temperature stability required for continuous robotic operation.
+
+We're currently scaling from prototype quantities. Worth a technical conversation?
+
+[Your name] · VPG Force Sensors`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s humanoid end-effector work is relevant to what VPG is doing right now. We're supplying force/torque sensing modules to multiple humanoid developers, scaling from prototype to production. Happy to connect and share specifics.`,
+      "followup":(co)=>`Hi [Name],
+
+Following up on the ${co} force sensing note.
+
+One specific question: what's your current wrist-level torque sensing architecture? That's usually the starting point — we can work outward from there to the palm and fingertip layers.
+
+[Your name]`,
+      "discovery-q":()=>`Discovery questions — Humanoid Force/Torque:
+
+1. Wrist-level F/T requirements — axes, range, resolution?
+2. Form factor constraints at the end-effector integration point?
+3. Operating temperature range for the robot's hand environment?
+4. Grasp taxonomy priority — power grasp, precision pinch, lateral pinch?
+5. Timeline from prototype to production quantities?`
+    }
+  },
+  aerospace:{
+    "strain-gage":{
+      "cold-email":(co,trig)=>`Subject: High-temperature strain gages for ${co}'s hypersonics / AMS program
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s test program involves measurement environments where standard foil gages fail — above 350°C, thermal gradients invalidate uncorrected strain data.
+
+VPG's self-temperature-compensating foil strain gages are designed specifically for this. Currently in beta at the University of Alabama for ceramic materials testing — the same material class in hypersonic avionics. AMS was VPG's second-fastest-growing segment in Q4 2025.
+
+Does ${co}'s program currently have a qualified strain gage solution for above 400°C?
+
+[Your name] · VPG Sensors`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s test program requirements align closely with VPG's high-temperature strain gage and measurement system capabilities. We're seeing strong AMS demand recovery and expanding into hypersonics instrumentation specifically. Happy to connect.`,
+      "followup":(co)=>`Hi [Name],
+
+Following up on the ${co} AMS note.
+
+Specific question: what's your current approach to thermal compensation above 300°C on test articles — are you using STC-matched gages, post-test correction algorithms, or both?
+
+[Your name]`,
+      "discovery-q":()=>`Discovery questions — Aerospace / AMS:
+
+1. Max test-article temperature for your instrumentation requirement?
+2. Strain gage longevity requirement — single-use test or repeated cycle?
+3. Is this a structural test, fatigue test, or in-flight instrumentation application?
+4. What's your current approval/qualification process for new strain gage suppliers?
+5. What's the test article material — metallic, composite, or ceramic?`
+    },
+    "measurement-system":{
+      "cold-email":(co,trig)=>`Subject: Advanced materials measurement for ${co}'s test program — VPG UC system
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}VPG recently deployed its UC system — a precision measurement platform for nonconductive materials including ceramics used in hypersonic avionics — in beta at the University of Alabama.
+
+This was the first external deployment. We're now identifying programs where the UC system's capability maps to active test requirements. Does ${co}'s program include any nonconductive material characterization that current resistive measurement tools can't handle?
+
+[Your name] · VPG Measurement Systems`,
+      "linkedin-note":(co)=>`Hi [Name] — VPG's new UC system for nonconductive material measurement (ceramics, composites) is now past beta and entering broader deployment. Relevant for ${co}'s hypersonics and AMS test programs. Happy to share the technical spec.`,
+      "followup":(co)=>`Hi [Name] — following up on the UC system for ${co}'s test program. One question: is your current materials testing workflow limited by the inability to measure electrical properties in parallel with mechanical strain? That's the specific gap the UC system addresses.`,
+      "discovery-q":()=>`Discovery questions — UC System / Advanced Materials:
+
+1. What material classes does your test program include — metals, composites, ceramics, or combinations?
+2. Are you currently able to measure electrical properties (resistance, conductance) of test materials alongside mechanical strain?
+3. What test frequency are you running — single measurement events or fatigue cycle studies?
+4. University lab, government facility, or industrial test environment?
+5. What's driving the need — new material qualification, process quality control, or academic research?`
+    }
+  },
+  testmeas:{
+    "foil-resistor":{
+      "cold-email":(co,trig)=>`Subject: Precision foil resistors for ${co}'s calibration instruments — VPG
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s calibration instruments require a reference element that holds its value when the measurement environment changes — temperature, load cycling, time.
+
+VPG's precision foil resistors are specified in T&M instruments where metal film fails on long-term stability. T&M was VPG Sensors' fastest-growing subsegment in Q4 2025 — up 18% YoY.
+
+What's your current foil resistor supplier and approval process for reference-grade components?
+
+[Your name] · VPG Foil Resistors`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s precision instrument work is directly relevant to VPG's precision foil resistor portfolio. We're seeing strong T&M demand recovery (+18% YoY in Q4 2025) and have been expanding into calibration instrument applications specifically. Happy to connect.`,
+      "followup":(co)=>`Hi [Name], following up on the ${co} foil resistor note. Quick question: what's your TCR requirement for the reference element in your primary calibration instrument? That determines whether standard or low-TCR foil is the right fit. [Your name]`,
+      "discovery-q":()=>`Discovery questions — Precision Foil Resistors / T&M:
+
+1. What's your TCR requirement for reference elements — standard (<10ppm/°C), low (<1ppm/°C), or ultra-low?
+2. What load life do you need — is this a calibration standard used daily or a production instrument?
+3. What's your current supplier for precision foil resistors?
+4. What certifications matter for your procurement process (OIML, ISO 17025 traceability)?
+5. What's your typical order volume and preferred supply model?`
+    },
+    "load-cell":{
+      "cold-email":(co,trig)=>`Subject: Reference-grade load cells for ${co}'s calibration systems — VPG
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s testing infrastructure requires load cells where measurement accuracy is traceable and stable over time — not just on day one.
+
+VPG reference load cells are used in calibration systems where traceability to primary standards matters. T&M was the primary driver of VPG's Sensors segment +18% YoY growth in Q4 2025.
+
+What's your current load cell source for primary calibration? Happy to run a comparison.
+
+[Your name] · VPG Sensors`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s calibration and testing work aligns with VPG's reference load cell portfolio. Strong T&M demand recovery ongoing (+18% YoY in Q4 2025). Would welcome connecting to explore fit.`,
+      "followup":(co)=>`Hi [Name], following up on the ${co} load cell note. One question: what's your measurement accuracy requirement for the reference cell — are you working to ±0.02% or tighter? That narrows the conversation quickly. [Your name]`,
+      "discovery-q":()=>`Discovery questions — Reference Load Cells / T&M:
+
+1. What accuracy class is required — 0.1%, 0.05%, 0.02%, or tighter?
+2. Is this for a primary calibration standard, secondary reference, or production test fixture?
+3. What environmental conditions does the load cell see — lab-controlled or industrial?
+4. What capacity range do you need?
+5. ISO 17025 traceability required for your documentation process?`
+    }
+  },
+  weighing:{
+    "load-cell":{
+      "cold-email":(co,trig)=>`Subject: OEM load cell supply for ${co}'s scale products — VPG
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s scale products require load cell components that combine OIML/NTEP certification with the manufacturing consistency and pricing structure your OEM program demands.
+
+VPG's Celtron, Tedea-Huntleigh, and Sensortronics brands have decades of OEM install base in industrial platform and floor scales. Weighing Solutions Q4 2025 book-to-bill was 1.02 — highest quarterly orders of the year — driven by Industrial Weighing and Transportation.
+
+Is ${co} currently evaluating its OEM load cell supply chain, or on a fixed supplier program?
+
+[Your name] · VPG Weighing Solutions`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s scale product line OEM requirements map directly to VPG's Weighing Solutions portfolio — Celtron, Tedea-Huntleigh, Sensortronics. We're seeing strong demand recovery (book-to-bill 1.02 in Q4 2025) and actively expanding OEM relationships. Happy to connect.`,
+      "followup":(co)=>`Hi [Name], following up on the ${co} OEM load cell note. Question: what's your annual volume requirement? That determines whether catalog pricing or a dedicated supply agreement makes more sense for your procurement model. [Your name]`,
+      "discovery-q":()=>`Discovery questions — Weighing OEM:
+
+1. What's your annual load cell volume requirement across your product line?
+2. What certifications matter — OIML, NTEP, ATEX, IP rating?
+3. What capacity range and form factor (single-point, shear beam, compression) do you use most?
+4. Are you on a single-source or multi-source supply model today?
+5. What's your current lead time requirement and safety stock approach?`
+    },
+    "onboard-weighing":{
+      "cold-email":(co,trig)=>`Subject: Onboard vehicle weighing for ${co}'s fleet — VPG
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}Fleet operators and OEM truck manufacturers are actively implementing onboard weighing to prevent overloads, improve payload utilization, and comply with road weight regulations.
+
+VPG's Onboard Weighing systems were a primary driver of Weighing Solutions' YoY revenue growth in Q4 2025 (Transportation segment). Our systems integrate directly with OEM truck architectures for axle load monitoring.
+
+What's ${co}'s current approach to payload measurement — manual weighbridge stops or integrated onboard monitoring?
+
+[Your name] · VPG Onboard Weighing`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s fleet or vehicle OEM program is relevant to VPG's Onboard Weighing systems — the transportation segment drove our Weighing Solutions Q4 2025 growth. Happy to connect on fit.`,
+      "followup":(co)=>`Hi [Name], following up on the ${co} onboard weighing note. One question: is the primary driver for your program regulatory compliance (road weight limits), payload optimization, or both? That determines the measurement architecture. [Your name]`,
+      "discovery-q":()=>`Discovery questions — Onboard Weighing:
+
+1. Is the primary driver regulatory compliance, payload optimization, or customer demand?
+2. What vehicle type and axle configuration — rigid body, articulated, multi-axle?
+3. Is this an OEM program or retrofit to existing fleet?
+4. What data integration is required — cab display only, or telematics/fleet management system?
+5. What accuracy class does your regulatory environment require?`
+    }
+  },
+  automation:{
+    "load-cell":{
+      "cold-email":(co,trig)=>`Subject: Force sensing for ${co}'s cobot end-effectors — VPG
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s collaborative robot line requires end-effector force sensing that's compact enough to integrate at the joint level without compromising the cobot's payload capacity.
+
+VPG's miniature load cells are specified in cobot and industrial robot end-effector applications where form factor and fatigue life are both critical. The sensing requirements increasingly overlap with humanoid robotics — where VPG has confirmed design-ins with 3+ leading developers.
+
+What's ${co}'s current force sensing approach for safe stop and collision detection?
+
+[Your name] · VPG Force Sensors`,
+      "linkedin-note":(co)=>`Hi [Name] — ${co}'s cobot force sensing requirements align with VPG's load cell portfolio. We're seeing strong robotics demand and can scale from cobot applications to humanoid sensing as requirements evolve. Happy to connect.`,
+      "followup":(co)=>`Hi [Name], following up on the ${co} cobot force sensing note. Specific question: are you sensing at the wrist only, or do you need joint-level sensing for more precise collision detection? [Your name]`,
+      "discovery-q":()=>`Discovery questions — Industrial Automation / Cobot:
+
+1. What force sensing function — collision detection, process force control, payload monitoring, or end-of-arm tooling feedback?
+2. Required axes — single-axis, 3-axis, or 6-DOF?
+3. What's the integration point — wrist, joint, or tooling?
+4. What's the duty cycle and expected fatigue life requirement?
+5. What safety standard governs your cobot deployment (ISO/TS 15066)?`
+    },
+    "weighing-system":{
+      "cold-email":(co,trig)=>`Subject: Process weighing integration for ${co}'s automation platform — VPG BLH Nobel
+
+Hi [Name],
+
+${trig?trig+'\n\n':''}${co}'s process automation customers are looking for weighing systems that integrate natively with PLC and SCADA architectures — not standalone instruments that require manual data transfer.
+
+VPG's BLH Nobel process weighing systems are specifically designed for DCS/PLC integration across food & beverage, chemical, and industrial batching applications.
+
+Does ${co}'s platform have an existing partner for gravimetric process control, or is this an open area?
+
+[Your name] · VPG BLH Nobel`,
+      "linkedin-note":(co)=>`Hi [Name] — VPG's BLH Nobel process weighing integrates natively with the DCS/PLC architectures ${co}'s customers use. Strong weighing demand recovery ongoing. Happy to connect and explore integration possibilities.`,
+      "followup":(co)=>`Hi [Name], following up on the ${co} process weighing note. Question: does your platform support OPC-UA data exchange from field instruments? That's the integration point BLH Nobel uses for most current IIoT deployments. [Your name]`,
+      "discovery-q":()=>`Discovery questions — Process Weighing / Automation:
+
+1. What DCS/PLC platform do your customers use most — Rockwell, Emerson, Siemens, Honeywell?
+2. What process — batching, continuous loss-in-weight, in-motion checkweighing, or blend control?
+3. What accuracy requirement — ±0.1%, ±0.05%, or tighter?
+4. What hazardous area classification, if any — Zone 1/2, Division 1/2?
+5. Is OPC-UA or other industrial protocol integration required?`
+    }
+  }
+};
+
+let currentTab='cold-email';
+let debounceTimer=null;
+function debouncedGenerate(){clearTimeout(debounceTimer);debounceTimer=setTimeout(generateOutput,350);}
+
+function generateOutput(){
+  const co=document.getElementById('comp-company').value||'[Company]';
+  const seg=document.getElementById('comp-market').value;
+  const prod=document.getElementById('comp-product').value;
+  const trig=document.getElementById('comp-trigger').value;
+  const outEl=document.getElementById('composer-output');
+  const sumEl=document.getElementById('account-summary');
+  const sumText=document.getElementById('account-summary-text');
+  const leadEl=document.getElementById('composer-lead');
+  const matchedAccount=accounts.find(a=>a.name===co);
+  if(matchedAccount&&matchedAccount.lead&&leadEl){
+    const l=matchedAccount.lead;
+    leadEl.innerHTML=`<div style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--color-surface-offset);border-radius:var(--radius-md);border:1px solid oklch(from var(--color-primary) l c h / 0.2);margin-bottom:var(--space-4)"><div style="flex:1"><div style="font-size:var(--text-xs);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Suggested Contact</div><div style="font-weight:600;color:var(--color-text)">${l.name}</div><div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:1px">${l.title}</div><div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px;line-height:1.5">${l.note}</div><a href="${l.li}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:var(--space-2);font-size:11px;color:var(--color-primary);text-decoration:none;font-weight:500">Open LinkedIn profile &#8599;</a></div></div>`;
+    leadEl.style.display='block';
+  } else if(leadEl){
+    leadEl.style.display='none';
+  }
+
+  if(!seg||!prod){
+    outEl.innerHTML='<div class="empty-state" style="padding:var(--space-8)"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12v8H2z"/><path d="M2 3l6 5 6-5"/></svg><h3>Select segment and product</h3><p>Both fields are required to generate outreach.</p></div>';
+    sumEl.style.display='none';
+    return;
+  }
+
+  const segTemplates=outreachTemplates[seg];
+  if(!segTemplates||!segTemplates[prod]){
+    outEl.innerHTML=`<pre style="font-family:var(--font-body);font-size:var(--text-sm);color:var(--color-text);line-height:1.8;white-space:pre-wrap">No template for ${seg} / ${prod} yet. Try: robotics + strain-gage or load-cell; aerospace + strain-gage or measurement-system; testmeas + foil-resistor or load-cell; weighing + load-cell or onboard-weighing; automation + load-cell or weighing-system.</pre>`;
+    sumEl.style.display='none';
+    return;
+  }
+
+  const tmpl=segTemplates[prod];
+  const text=tmpl[currentTab]?tmpl[currentTab](co,trig):'Template for this format coming soon.';
+  outEl.innerHTML=`<pre>${text}</pre>`;
+
+  const sumFn=accountSummaries[seg];
+  if(sumFn){
+    sumText.textContent=sumFn(co,trig);
+    sumEl.style.display='block';
+  }
+}
+
+function switchTab(btn,tab){
+  document.querySelectorAll('.output-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTab=tab;
+  generateOutput();
+}
+
+// Initialize bars animation on page load
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{
+    document.querySelectorAll('.bar-fill').forEach(b=>{
+      const w=b.style.width;b.style.width='0';
+      setTimeout(()=>{b.style.width=w;},100);
+    });
+  },300);
+});
+</script>
+</body>
+</html>
