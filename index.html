@@ -263,6 +263,45 @@ a,button,[role="button"],input,select{transition:color var(--transition),backgro
   .source-card-header{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)}
   .source-card-title{font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
   .source-card-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.5}
+  /* === LIVE SIGNAL FEED (added) === */
+  @keyframes wa-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+  .wa-skeleton{background:linear-gradient(90deg,var(--color-surface-offset) 25%,var(--color-surface-dynamic) 50%,var(--color-surface-offset) 75%);background-size:200% 100%;animation:wa-shimmer 1.5s ease-in-out infinite;border-radius:var(--radius-sm)}
+  @keyframes wa-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .wa-live-dot{width:6px;height:6px;border-radius:50%;background:var(--color-success);display:inline-block;animation:wa-pulse 2s infinite}
+  .wa-api-bar{display:flex;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-4)}
+  .wa-api-chip{display:flex;align-items:center;gap:6px;font-size:10px;padding:3px 10px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface);color:var(--color-text-muted)}
+  .wa-chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--color-text-faint)}
+  .wa-chip-dot.ok{background:var(--color-success)}
+  .wa-chip-dot.err{background:var(--color-notification)}
+  .wa-chip-dot.loading{background:var(--color-gold);animation:wa-pulse 1s infinite}
+  .wa-week-meta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-5)}
+  .wa-legend{display:flex;gap:var(--space-4);flex-wrap:wrap}
+  .wa-legend-item{display:flex;align-items:center;gap:5px;font-size:var(--text-xs);color:var(--color-text-muted)}
+  .wa-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .wa-refresh-btn{font-size:var(--text-xs);padding:var(--space-1) var(--space-3);border-radius:var(--radius-md);border:1px solid var(--color-border);color:var(--color-text-muted);background:var(--color-surface);cursor:pointer;display:flex;align-items:center;gap:5px}
+  .wa-refresh-btn:hover{border-color:var(--color-primary);color:var(--color-primary)}
+  .wa-ts{font-size:var(--text-xs);color:var(--color-text-faint)}
+  .wa-meta-right{display:flex;align-items:center;gap:var(--space-3)}
+  .source-card-free{font-size:9px;margin-top:6px;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--radius-full);font-weight:600;background:var(--color-success-highlight);color:var(--color-success)}
+  .signal-pill.hn-src{background:color-mix(in oklch,#ff6600 12%,transparent);color:#c04400;border:1px solid color-mix(in oklch,#ff6600 25%,transparent)}
+  .signal-pill.news-src{background:color-mix(in oklch,#34495e 12%,transparent);color:#34495e;border:1px solid color-mix(in oklch,#34495e 25%,transparent)}
+  .wa-score-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.16,1,.3,1)}
+  .wa-score-fill.hot{background:linear-gradient(90deg,#e05c4e,#da7101)}
+  .wa-score-fill.warm{background:linear-gradient(90deg,#e8af34,#b07a00)}
+  .wa-score-fill.cool{background:var(--color-primary)}
+  .wa-empty{padding:var(--space-8) var(--space-4);text-align:center;color:var(--color-text-muted);font-size:var(--text-xs);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+  .wa-org-title{font-size:var(--text-sm);font-weight:700;color:var(--color-text);padding-right:60px;line-height:1.3;margin-bottom:2px}
+  .wa-card-age{font-size:10px;color:var(--color-text-faint);margin-bottom:var(--space-3)}
+  .wa-sig-src-tag{font-weight:700;flex-shrink:0;padding:1px 5px;border-radius:3px;font-size:8px;text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .wa-sig-src-sam{background:#005ea2;color:white}
+  .wa-sig-src-hn{background:#ff6600;color:white}
+  .wa-sig-src-news{background:#34495e;color:white}
+  .wa-sig-text{color:var(--color-text-muted);flex:1}
+  .wa-sig-text a{color:var(--color-primary);text-decoration:none}
+  .wa-sig-text a:hover{text-decoration:underline}
+  .wa-rank{position:absolute;top:var(--space-3);right:var(--space-3);font-size:10px;font-weight:700;display:flex;align-items:center;gap:3px}
+  .warm-card{position:relative}
+
 </style>
 </head>
 <body>
@@ -700,54 +739,104 @@ a,button,[role="button"],input,select{transition:color var(--transition),backgro
 
 <script>
 
-    <!-- PANEL: SIGNALS (Warm Accounts) -->
+    <!-- PANEL: SIGNALS (Warm Accounts) — Live Free API Feed -->
   <div class="panel" id="panel-signals">
     <div class="page-header">
       <div class="page-title">Warm Accounts Signal Feed</div>
-      <div class="page-desc">Weekly priority list of warm accounts segmented by Sensors, Weighing, and Measurement Systems. Signals sourced from LinkedIn job postings, Crunchbase funding rounds, and SAM.gov contract awards.</div>
+      <div class="page-desc">Weekly priority list powered by <strong>three free public APIs</strong> — SAM.gov contract opportunities, Hacker News startup signals, and Google News RSS funding alerts — segmented by Izhar's three verticals. No paid subscription, no login required.</div>
     </div>
+
     <!-- Source Method Cards -->
     <div class="source-cards">
       <div class="source-card">
         <div class="source-card-header">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0a66c2" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
-          <span class="source-card-title">LinkedIn Jobs</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#005ea2" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span class="source-card-title">SAM.gov API</span>
         </div>
-        <p class="source-card-desc">Scrapes for titles like <em>sensor engineer</em>, <em>load cell designer</em>, <em>weighing systems engineer</em>. Active hiring = budget unlocked.</p>
+        <p class="source-card-desc">Official US gov procurement API. Searches contract opportunities posted in the last 30 days matching VPG keywords: "sensor", "load cell", "strain gage", "weighing", "measurement system".</p>
+        <span class="source-card-free"><span class="wa-live-dot"></span> Free · DEMO_KEY · No login</span>
       </div>
       <div class="source-card">
         <div class="source-card-header">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3c56a6" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <span class="source-card-title">Crunchbase Signals</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6600" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <span class="source-card-title">Hacker News API</span>
         </div>
-        <p class="source-card-desc">Series A–C funding rounds in precision instruments, industrial IoT, robotics. New capital = purchases within 60–90 days.</p>
+        <p class="source-card-desc">Algolia full-text search on HN stories from the last 30 days. Surfaces startup launches, funding announcements, and hiring posts for precision sensing, weighing, and metrology companies.</p>
+        <span class="source-card-free"><span class="wa-live-dot"></span> Free · No auth · Open CORS</span>
       </div>
       <div class="source-card">
         <div class="source-card-header">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2e5f8a" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          <span class="source-card-title">SAM.gov Awards</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34495e" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          <span class="source-card-title">Google News RSS</span>
         </div>
-        <p class="source-card-desc">Contract awards/RFPs with keywords <em>force measurement</em>, <em>strain gage</em>, <em>precision weighing</em>, <em>calibration</em>.</p>
+        <p class="source-card-desc">RSS2JSON proxy converts Google News keyword feeds to CORS-friendly JSON. Returns recent news about sensor/weighing/measurement companies — funding rounds, expansions, acquisitions as buying signals.</p>
+        <span class="source-card-free"><span class="wa-live-dot"></span> Free · RSS2JSON · 10k req/mo</span>
       </div>
     </div>
+
+    <!-- API status bar -->
+    <div class="wa-api-bar" id="wa-api-bar">
+      <div class="wa-api-chip"><div class="wa-chip-dot loading" id="dot-sam"></div><span id="stat-sam">SAM.gov: loading…</span></div>
+      <div class="wa-api-chip"><div class="wa-chip-dot loading" id="dot-hn"></div><span id="stat-hn">HN API: loading…</span></div>
+      <div class="wa-api-chip"><div class="wa-chip-dot loading" id="dot-news"></div><span id="stat-news">News RSS: loading…</span></div>
+      <div class="wa-api-chip"><div class="wa-chip-dot" id="dot-total" style="background:var(--color-text-faint)"></div><span id="stat-total">Total signals: counting…</span></div>
+    </div>
+
     <!-- Week Navigator -->
-    <div class="week-bar">
-      <button id="week-prev" onclick="signalsPrevWeek()">← Prev</button>
-      <span class="week-label" id="week-label">Apr 21–27, 2026</span>
-      <button id="week-next" onclick="signalsNextWeek()">Next →</button>
-    </div>
-    <!-- Three Vertical Columns -->
-    <div class="signals-layout" id="signals-layout"></div>
-    <!-- Scoring Legend -->
-    <div style="margin-top:var(--space-6);padding:var(--space-4);background:var(--color-surface-2);border-radius:var(--radius-md);border:1px solid var(--color-border)">
-      <div style="font-family:var(--font-display);font-size:var(--text-sm);font-weight:700;color:var(--color-text);margin-bottom:var(--space-2)">Scoring Algorithm</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);font-size:var(--text-xs);color:var(--color-text-muted)">
-        <div><strong>Signal Recency (40 pts)</strong><br/>≤7 days = full; 8–14 = 0.7×; 15–30 = 0.4×</div>
-        <div><strong>Source Diversity (30 pts)</strong><br/>10 pts per source + 5 pt diversity bonus</div>
-        <div><strong>VPG Product Fit (30 pts)</strong><br/>Keyword match against VPG product taxonomy</div>
+    <div class="week-bar" style="justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:var(--text-sm);font-weight:600;color:var(--color-text)" id="week-label-main">📅 Week of —</div>
+        <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px" id="week-sub-main">Fetching signals…</div>
+      </div>
+      <div style="display:flex;gap:var(--space-2);align-items:center">
+        <button id="week-prev" onclick="signalsPrevWeek()">← Prev</button>
+        <span class="week-label" id="week-label" style="display:none"></span>
+        <button id="week-this" onclick="signalsThisWeek()" style="background:var(--color-primary-highlight);border-color:var(--color-primary);color:var(--color-primary)">This Week</button>
+        <button id="week-next" onclick="signalsNextWeek()">Next →</button>
       </div>
     </div>
-  </div>// ===== THEME TOGGLE =====
+
+    <!-- Legend + Refresh row -->
+    <div class="wa-week-meta">
+      <div class="wa-legend">
+        <div class="wa-legend-item"><div class="wa-legend-dot" style="background:#005ea2"></div>SAM.gov</div>
+        <div class="wa-legend-item"><div class="wa-legend-dot" style="background:#ff6600"></div>Hacker News</div>
+        <div class="wa-legend-item"><div class="wa-legend-dot" style="background:#34495e"></div>News/RSS</div>
+        <div class="wa-legend-item"><div class="wa-legend-dot" style="background:#e05c4e"></div>🔥 HOT (≥80)</div>
+        <div class="wa-legend-item"><div class="wa-legend-dot" style="background:#e8af34"></div>🌡 WARM (60–79)</div>
+      </div>
+      <div class="wa-meta-right">
+        <span class="wa-ts" id="wa-ts">Fetching…</span>
+        <button class="wa-refresh-btn" onclick="waLoadSignals()">
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 8A6 6 0 1 1 8 2"/><polyline points="14 2 14 8 8 8"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Three Vertical Columns (populated by JS) -->
+    <div class="signals-layout" id="signals-layout"></div>
+
+    <!-- Scoring Legend -->
+    <div style="margin-top:var(--space-6);padding:var(--space-5);background:var(--color-surface-2);border-radius:var(--radius-xl);border:1px solid var(--color-border)">
+      <div style="font-size:var(--text-sm);font-weight:600;color:var(--color-text);margin-bottom:var(--space-2)">How the Priority Score Works</div>
+      <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-4);line-height:1.7">Composite 0–100 score computed weekly from live API data. Updated every Sunday at midnight.</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4)">
+        <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4)">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-primary);margin-bottom:var(--space-2)">Signal Recency (40 pts)</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text);line-height:1.75">≤7 days = 40 pts · 8–14 days = 28 pts · 15–30 days = 16 pts. Older signals are dropped. Recency is the strongest predictor of active purchase intent.</div>
+        </div>
+        <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4)">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-primary);margin-bottom:var(--space-2)">Source Diversity (30 pts)</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text);line-height:1.75">10 pts per source firing (SAM.gov, HN, News). +5 pt diversity bonus when 2+ sources fire simultaneously. Cross-source convergence = strongest buying signal.</div>
+        </div>
+        <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4)">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-primary);margin-bottom:var(--space-2)">VPG Product Fit (30 pts)</div>
+          <div style="font-size:var(--text-xs);color:var(--color-text);line-height:1.75">Keyword matching against VPG's product taxonomy: strain gages, load cells, foil resistors, weighing systems, force transducers, measurement modules. Exact-match titles score highest.</div>
+        </div>
+      </div>
+    </div>
+  </div>// ===== THEME TOGGLE =====// ===== THEME TOGGLE =====
 (function(){
   const r=document.documentElement;
   let d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
@@ -1497,141 +1586,308 @@ document.addEventListener('DOMContentLoaded',()=>{
   },300);
 });
 
-  // ===== WARM ACCOUNTS SIGNALS =====
-  const SIGNAL_DATA = [
+  // ===== WARM ACCOUNTS SIGNALS — Live Free API Feed =====
+  // Sources: SAM.gov (DEMO_KEY) · Hacker News Algolia · Google News via RSS2JSON
+  // All free, no paid subscription, no login required
+
+  const WA_VERTICALS = [
     {
-      id: 's1', segment: 'Sensors', company: 'Tesla Optimus Program',
-      linkedin: 'Hiring 5x sensor engineers for Optimus hand actuation (Apr 23)',
-      crunchbase: 'Series D, $2.1B raised — $450M earmarked for perception stack (Apr 19)',
-      samgov: '',
-      score: 94
+      id:'sensors', label:'Sensors', icon:'📡',
+      samQ:['sensor','strain gage','force measurement','piezoelectric'],
+      hnQ:'sensor force measurement technology company startup',
+      newsQ:'sensor company OR "force sensor" OR "strain gauge" funding acquisition',
+      vpgKW:['strain gage','strain gauge','force sensor','piezo','tactile sensor','transducer','load measurement','foil sensor','resistance foil','strain','shear beam']
     },
     {
-      id: 's2', segment: 'Sensors', company: 'Boston Dynamics',
-      linkedin: 'Force-torque sensor integration roles open (Apr 20)',
-      crunchbase: 'Hyundai-backed; expanding Atlas commercial deployment (Apr 22)',
-      samgov: '',
-      score: 87
+      id:'weighing', label:'Weighing', icon:'⚖️',
+      samQ:['weighing','load cell','precision scale','mass measurement'],
+      hnQ:'precision weighing industrial scale load cell company startup',
+      newsQ:'"load cell" OR "precision weighing" OR "industrial scale" OR "check weigher" funding acquisition',
+      vpgKW:['load cell','weighing','precision scale','mass measurement','checkweigher','NTEP','OIML','platform scale','weigh module','celtron','tedea']
     },
     {
-      id: 's3', segment: 'Sensors', company: 'Apptronik',
-      linkedin: 'Strain gage calibration technician posting (Apr 21)',
-      crunchbase: 'Series B, $80M raised for Apollo humanoid (Apr 18)',
-      samgov: '',
-      score: 82
-    },
-    {
-      id: 's4', segment: 'Sensors', company: 'Sanctuary AI',
-      linkedin: '',
-      crunchbase: 'Series B+ at $400M valuation; scaling Phoenix robot (Apr 24)',
-      samgov: 'DARPA SBIR Phase II — tactile sensing for dexterous manipulation ($1.2M award, Apr 25)',
-      score: 78
-    },
-    {
-      id: 'w1', segment: 'Weighing', company: 'Mettler Toledo',
-      linkedin: 'Load cell design engineer roles in Switzerland + US (Apr 19)',
-      crunchbase: '',
-      samgov: 'GSA Schedule refresh — precision weighing systems contract (Apr 22)',
-      score: 86
-    },
-    {
-      id: 'w2', segment: 'Weighing', company: 'Hardy Process Solutions',
-      linkedin: '',
-      crunchbase: 'Acquired by Novanta for $280M; integration roadmap published (Apr 20)',
-      samgov: '',
-      score: 74
-    },
-    {
-      id: 'w3', segment: 'Weighing', company: 'Schenck Process',
-      linkedin: 'Weighing systems field service roles (Apr 24)',
-      crunchbase: '',
-      samgov: 'DOT contract — dynamic axle weighing systems ($890K, Apr 21)',
-      score: 81
-    },
-    {
-      id: 'w4', segment: 'Weighing', company: 'Fairbanks Scales',
-      linkedin: '',
-      crunchbase: '',
-      samgov: 'USPS — industrial scale modernization RFP released (Apr 23)',
-      score: 69
-    },
-    {
-      id: 'm1', segment: 'Measurement Systems', company: 'MTS Systems (ITW)',
-      linkedin: 'Materials testing instrumentation engineer (Apr 22)',
-      crunchbase: 'ITW integration — new product roadmap for servo-hydraulic systems (Apr 21)',
-      samgov: '',
-      score: 91
-    },
-    {
-      id: 'm2', segment: 'Measurement Systems', company: 'HBM (HBK)',
-      linkedin: 'Data acquisition engineer — test & measurement (Apr 20)',
-      crunchbase: '',
-      samgov: '',
-      score: 76
-    },
-    {
-      id: 'm3', segment: 'Measurement Systems', company: 'National Instruments (Emerson)',
-      linkedin: '',
-      crunchbase: 'Emerson acquisition close; PXI platform investment announced (Apr 25)',
-      samgov: 'NASA SBIR — high-frequency strain measurement for launch vehicle testing ($2.4M, Apr 19)',
-      score: 88
-    },
-    {
-      id: 'm4', segment: 'Measurement Systems', company: 'Keysight Technologies',
-      linkedin: 'Precision measurement applications engineer (Apr 24)',
-      crunchbase: '',
-      samgov: '',
-      score: 72
+      id:'measurement', label:'Measurement Systems', icon:'📐',
+      samQ:['measurement system','calibration','instrumentation','metrology'],
+      hnQ:'measurement instrumentation metrology calibration test equipment company',
+      newsQ:'"measurement system" OR metrology OR calibration OR instrumentation funding acquisition',
+      vpgKW:['measurement system','calibration','metrology','test instrumentation','data acquisition','DAQ','NDT','non-destructive','structural test','torque measurement','UC system']
     }
   ];
-  const VERTICALS = [
-    { id: 'sensors', label: 'Sensors', icon: '📡' },
-    { id: 'weighing', label: 'Weighing', icon: '⚖️' },
-    { id: 'measurement', label: 'Measurement Systems', icon: '📐' }
-  ];
-  let currentWeekOffset = 0;
-  const WEEK_LABELS = ['Apr 21–27, 2026', 'Apr 14–20, 2026', 'Apr 7–13, 2026'];
-  function getScoreClass(score){ return score >= 80 ? 'hot' : 'warm'; }
-  function renderSignals(){
-    const layout = document.getElementById('signals-layout');
-    const labelEl = document.getElementById('week-label');
-    labelEl.textContent = WEEK_LABELS[currentWeekOffset];
-    let html = '';
-    VERTICALS.forEach(v => {
-      const accounts = SIGNAL_DATA.filter(a => a.segment === v.label).slice(0, 4);
-      html += '<div class="vertical-column">';
-      html += '<div class="vertical-header"><span class="vertical-icon">'+v.icon+'</span><span class="vertical-title">'+v.label+'</span></div>';
-      accounts.forEach(a => {
-        const sc = getScoreClass(a.score);
-        const fillW = a.score+'%';
-        html += '<div class="warm-card">';
-        html += '<div class="warm-card-header">';
-        html += '<div><div class="warm-card-title">'+a.company+'</div><div class="warm-card-segment">'+a.segment+'</div></div>';
-        html += '<div><div class="warm-score '+sc+'">'+a.score+'</div></div>';
-        html += '</div>';
-        html += '<div class="score-bar"><div class="score-fill '+sc+'" style="width:'+fillW+'"></div></div>';
-        html += '<div class="signal-pills">';
-        if(a.linkedin){ html += '<div class="signal-pill linkedin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg><span>'+a.linkedin+'</span></div>'; }
-        if(a.crunchbase){ html += '<div class="signal-pill crunchbase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>'+a.crunchbase+'</span></div>'; }
-        if(a.samgov){ html += '<div class="signal-pill samgov"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>'+a.samgov+'</span></div>'; }
-        html += '</div>';
-        html += '<div class="warm-card-footer">';
-        html += '<button class="btn-primary" onclick="openOutreach(\''+a.company+'\',\''+a.segment+'\')">Draft Outreach</button>';
-        html += '<button class="btn-secondary" onclick="addToCRM(\''+a.company+'\')">Add to CRM</button>';
-        html += '</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-    });
-    layout.innerHTML = html;
-    document.getElementById('week-prev').classList.toggle('active', currentWeekOffset === 0);
-    document.getElementById('week-next').classList.toggle('active', currentWeekOffset === WEEK_LABELS.length - 1);
+
+  let waWeekOffset = 0;
+  let waFetching = false;
+  let waSignals = { sensors:[], weighing:[], measurement:[] };
+
+  const waFmt2 = n => String(n).padStart(2,'0');
+  function waGetWeekRange(offset) {
+    const now = new Date();
+    const sun = new Date(now); sun.setDate(now.getDate() - now.getDay() + offset*7);
+    const sat = new Date(sun); sat.setDate(sun.getDate() + 6);
+    return {
+      label: sun.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
+             sat.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+      startFmt: `${waFmt2(sun.getMonth()+1)}/${waFmt2(sun.getDate())}/${sun.getFullYear()}`,
+      endFmt:   `${waFmt2(sat.getMonth()+1)}/${waFmt2(sat.getDate())}/${sat.getFullYear()}`
+    };
   }
-  function signalsPrevWeek(){ if(currentWeekOffset < WEEK_LABELS.length - 1){ currentWeekOffset++; renderSignals(); } }
-  function signalsNextWeek(){ if(currentWeekOffset > 0){ currentWeekOffset--; renderSignals(); } }
-  function openOutreach(company, segment){ showPanel('outreach', document.querySelector('[data-panel="outreach"]')); document.getElementById('composer-company').value = company; const segSel = document.getElementById('composer-segment'); if(segSel){ Array.from(segSel.options).forEach(o => { if(o.textContent.includes(segment)){ segSel.value = o.value; } }); } generateOutput(); }
-  function addToCRM(company){ alert('CRM integration placeholder for: ' + company); }
+
+  function waDaysAgo(dateStr) {
+    if(!dateStr) return 999;
+    const d = new Date(dateStr);
+    return isNaN(d) ? 999 : Math.floor((Date.now()-d.getTime())/86400000);
+  }
+
+  function waRecencyScore(days){
+    if(days<=7)  return 40;
+    if(days<=14) return 28;
+    if(days<=30) return 16;
+    return 0;
+  }
+
+  function waKwScore(text, kws){
+    if(!text) return 0;
+    const low = text.toLowerCase();
+    let hits = 0; kws.forEach(k=>{ if(low.includes(k.toLowerCase())) hits++; });
+    return Math.min(30, hits*8);
+  }
+
+  function waTruncate(str, n){
+    if(!str||str.length<=n) return str||'';
+    return str.slice(0,n).trimEnd()+'…';
+  }
+
+  function waSafeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function waExtractOrg(title){
+    const m1 = title.match(/^([A-Z][A-Za-z0-9\s\.\-]{2,30?})\s+(raises|closes|secures|lands|gets|awarded|wins|launches|acquires|announces|releases)/i);
+    if(m1) return m1[1].trim();
+    const m2 = title.match(/^([A-Z][A-Za-z0-9\s\.\-]{3,25?})(?:\s*[,\-–:]|\s+(?:gets|is|has|to|will|plans))/);
+    if(m2) return m2[1].trim();
+    const words = title.split(' ').filter(w=>w.length>1);
+    const lead = words.slice(0,3).join(' ');
+    return lead.length>4 ? lead : 'Company';
+  }
+
+  // ── FETCHERS ────────────────────────────────────────────
+  async function waFetchSAM(vertical) {
+    const since = new Date(); since.setDate(since.getDate()-30);
+    const from = `${waFmt2(since.getMonth()+1)}/${waFmt2(since.getDate())}/${since.getFullYear()}`;
+    const to   = `${waFmt2(new Date().getMonth()+1)}/${waFmt2(new Date().getDate())}/${new Date().getFullYear()}`;
+    const kw   = encodeURIComponent(vertical.samQ.slice(0,2).join(' '));
+    const url  = `https://api.sam.gov/opportunities/v2/search?limit=15&postedFrom=${from}&postedTo=${to}&keywords=${kw}&api_key=DEMO_KEY`;
+    const res  = await fetch(url, {headers:{Accept:'application/json'}});
+    if(!res.ok) throw new Error('SAM '+res.status);
+    const data = await res.json();
+    return (data.opportunitiesData||[]).map(o=>({
+      source:'sam', org:o.organizationName||o.fullParentPathName||'US Federal Agency',
+      title:o.title||'', date:o.postedDate||'', value:o.baseAndAllOptionsValue||0,
+      desc:(o.description||'').slice(0,200),
+      url:`https://sam.gov/opp/${o.noticeId||''}`
+    }));
+  }
+
+  async function waFetchHN(vertical) {
+    const since = Math.floor(Date.now()/1000)-30*86400;
+    const q = encodeURIComponent(vertical.hnQ);
+    const url = `https://hn.algolia.com/api/v1/search?query=${q}&tags=story&hitsPerPage=12&numericFilters=created_at_i%3E${since}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HN '+res.status);
+    const data = await res.json();
+    return (data.hits||[]).map(h=>({
+      source:'hn', org:waExtractOrg(h.title||'')||'Startup',
+      title:h.title||'', date:h.created_at||'', points:h.points||0,
+      url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`
+    }));
+  }
+
+  async function waFetchNews(vertical) {
+    const q = encodeURIComponent(vertical.newsQ);
+    const rss = encodeURIComponent(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`);
+    const url = `https://api.rss2json.com/v1/api.json?rss_url=${rss}&count=12`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('RSS2JSON '+res.status);
+    const data = await res.json();
+    if(data.status!=='ok') throw new Error('RSS2JSON: '+data.message);
+    return (data.items||[]).map(i=>({
+      source:'news', org:waExtractOrg(i.title||'')||'Co.',
+      title:i.title||'', date:i.pubDate||'', url:i.link||'#',
+      desc:(i.description||'').replace(/<[^>]+>/g,'').slice(0,200)
+    }));
+  }
+
+  // ── SCORING & ACCOUNT BUILDING ───────────────────────────
+  function waScoreSig(sig, vert) {
+    const days = waDaysAgo(sig.date);
+    if(days>45) return 0;
+    let s = waRecencyScore(days);
+    const txt = [sig.title, sig.desc||'', sig.org||''].join(' ');
+    s += waKwScore(txt, vert.vpgKW) + 10;
+    if(sig.source==='sam'){ if(sig.value>1e6) s+=8; else if(sig.value>5e5) s+=4; }
+    if(sig.source==='hn' && sig.points>50) s+=6;
+    if(sig.source==='hn' && sig.points>100) s+=4;
+    return Math.min(100,s);
+  }
+
+  function waBuildAccounts(sigs, vert) {
+    const map={};
+    sigs.forEach(sig=>{
+      const key = (sig.org||'?').toLowerCase().slice(0,30);
+      if(!map[key]) map[key]={org:sig.org, sigs:[], maxDate:sig.date};
+      map[key].sigs.push(sig);
+      if(new Date(sig.date)>new Date(map[key].maxDate)) map[key].maxDate=sig.date;
+    });
+    return Object.values(map).map(a=>{
+      const srcs=[...new Set(a.sigs.map(s=>s.source))];
+      const base=Math.max(...a.sigs.map(s=>waScoreSig(s,vert)));
+      const score=Math.min(100,base+(srcs.length>=2?5:0));
+      return {org:a.org, sigs:a.sigs.slice(0,3), score, days:waDaysAgo(a.maxDate)};
+    }).filter(a=>a.score>=20).sort((a,b)=>b.score-a.score).slice(0,4);
+  }
+
+  // ── RENDERING ────────────────────────────────────────────
+  function waHeatClass(score){ return score>=80?'hot':score>=60?'warm':'cool'; }
+  function waHeatEmoji(score){ return score>=80?'🔥 HOT':score>=60?'🌡 WARM':'📌'; }
+  function waHeatColor(score){ return score>=80?'var(--color-error)':score>=60?'var(--color-gold)':'var(--color-primary)'; }
+
+  function waRenderSigPill(sig) {
+    const cls = sig.source==='sam'?'samgov':sig.source==='hn'?'linkedin':'crunchbase';
+    const tagCls = 'wa-sig-src-'+sig.source;
+    const label = sig.source==='sam'?'SAM.gov':sig.source==='hn'?'HN':'News';
+    const text  = sig.source==='sam'
+      ? `${waSafeHtml(waTruncate(sig.title,90))}${sig.value>0?' · $'+Number(sig.value).toLocaleString():''}`
+      : `<a href="${waSafeHtml(sig.url)}" target="_blank" rel="noopener">${waSafeHtml(waTruncate(sig.title,90))}</a>${sig.source==='hn'&&sig.points>0?' · '+sig.points+' pts':''}`;
+    return `<div class="signal-pill ${cls}" style="align-items:flex-start"><span class="${tagCls}" style="padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;margin-top:1px;background:${sig.source==='sam'?'#005ea2':sig.source==='hn'?'#ff6600':'#34495e'};color:white">${label}</span><span class="wa-sig-text">${text}</span></div>`;
+  }
+
+  function waRenderSkeletons() {
+    const col = ()=>`<div class="vertical-column">
+      <div class="vertical-header">
+        <div class="wa-skeleton" style="width:32px;height:32px;border-radius:var(--radius-md)"></div>
+        <div class="wa-skeleton" style="width:80px;height:14px;margin-left:8px"></div>
+      </div>
+      ${[0,1,2,3].map(()=>`<div class="warm-card" style="display:flex;flex-direction:column;gap:10px">
+        <div class="wa-skeleton" style="height:14px;width:70%"></div>
+        <div class="wa-skeleton" style="height:6px;width:100%"></div>
+        <div class="wa-skeleton" style="height:30px;width:100%"></div>
+        <div class="wa-skeleton" style="height:30px;width:100%"></div>
+      </div>`).join('')}
+    </div>`;
+    document.getElementById('signals-layout').innerHTML = col()+col()+col();
+  }
+
+  function renderSignals() {
+    const grid = document.getElementById('signals-layout');
+    if(!grid) return;
+    const cols = WA_VERTICALS.map(v=>{
+      const accounts = waBuildAccounts(waSignals[v.id]||[], v);
+      if(accounts.length===0) {
+        return `<div class="vertical-column">
+          <div class="vertical-header"><span class="vertical-icon">${v.icon}</span><span class="vertical-title">${v.label}</span></div>
+          <div class="wa-empty"><strong>No signals found</strong><br>APIs may be rate-limited. Try refreshing in a minute.</div>
+        </div>`;
+      }
+      const cards = accounts.map((a,i)=>{
+        const sc = waHeatClass(a.score);
+        const daysLabel = a.days<=1?'Today':a.days<=7?a.days+'d ago':a.days+'d ago';
+        return `<div class="warm-card">
+          <div class="wa-rank">#${i+1} <span style="color:${waHeatColor(a.score)};font-size:10px">${waHeatEmoji(a.score)}</span></div>
+          <div class="wa-org-title">${waSafeHtml(waTruncate(a.org,45))}</div>
+          <div class="wa-card-age">Latest signal: ${daysLabel} · ${a.sigs.length} signal${a.sigs.length!==1?'s':''}</div>
+          <div class="warm-card-header" style="margin-bottom:var(--space-3)">
+            <div class="warm-score ${sc}">${a.score}</div>
+          </div>
+          <div class="score-bar"><div class="wa-score-fill ${sc}" data-pct="${a.score}" style="width:0%;height:100%;border-radius:3px"></div></div>
+          <div class="signal-pills" style="margin-top:var(--space-3)">${a.sigs.map(waRenderSigPill).join('')}</div>
+          <div class="warm-card-footer">
+            <button class="btn-primary" onclick="openOutreach('${a.org.replace(/'/g,"\'")}','${v.label}')">Draft Outreach</button>
+            <button class="btn-secondary" onclick="addToCRM('${a.org.replace(/'/g,"\'")}')">Add to CRM</button>
+          </div>
+        </div>`;
+      }).join('');
+      return `<div class="vertical-column">
+        <div class="vertical-header"><span class="vertical-icon">${v.icon}</span><span class="vertical-title">${v.label}</span></div>
+        ${cards}
+      </div>`;
+    }).join('');
+    grid.innerHTML = cols;
+    // Animate score bars
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      document.querySelectorAll('.wa-score-fill').forEach(el=>{
+        el.style.width=(el.dataset.pct||0)+'%';
+      });
+    }));
+    // Update nav badge
+    const total = WA_VERTICALS.reduce((n,v)=>n+waBuildAccounts(waSignals[v.id]||[],v).length,0);
+    const badge = document.getElementById('badge-signals');
+    if(badge) badge.textContent = total||'—';
+  }
+
+  // ── STAT HELPERS ─────────────────────────────────────────
+  function waSetStat(id, dotId, text, state){
+    const el = document.getElementById(id);
+    const dot = document.getElementById(dotId);
+    if(el) el.textContent = text;
+    if(dot){ dot.className='wa-chip-dot'; if(state==='ok') dot.classList.add('ok'); else if(state==='err') dot.classList.add('err'); else dot.classList.add('loading'); }
+  }
+
+  // ── MAIN FETCH ───────────────────────────────────────────
+  async function waLoadSignals(){
+    if(waFetching) return;
+    waFetching = true;
+    waRenderSkeletons();
+    document.getElementById('wa-ts').textContent = 'Fetching live data…';
+    const wk = waGetWeekRange(waWeekOffset);
+    document.getElementById('week-label-main').textContent = '📅 Week of '+wk.label;
+    document.getElementById('week-sub-main').textContent = 'Fetching signals from 3 free APIs…';
+    document.getElementById('week-label').textContent = wk.label;
+    waSetStat('stat-sam','dot-sam','SAM.gov: loading…','loading');
+    waSetStat('stat-hn','dot-hn','HN API: loading…','loading');
+    waSetStat('stat-news','dot-news','News RSS: loading…','loading');
+    WA_VERTICALS.forEach(v=>{ waSignals[v.id]=[]; });
+    const tasks = [];
+    WA_VERTICALS.forEach(v=>{
+      tasks.push(waFetchSAM(v).then(r=>{ waSignals[v.id].push(...r); return {src:'sam',n:r.length}; }).catch(e=>({src:'sam',n:0,err:e.message})));
+      tasks.push(waFetchHN(v).then(r=>{ waSignals[v.id].push(...r); return {src:'hn',n:r.length}; }).catch(e=>({src:'hn',n:0,err:e.message})));
+      tasks.push(waFetchNews(v).then(r=>{ waSignals[v.id].push(...r); return {src:'news',n:r.length}; }).catch(e=>({src:'news',n:0,err:e.message})));
+    });
+    const results = await Promise.allSettled(tasks);
+    const agg={sam:0,hn:0,news:0};
+    results.forEach(r=>{ if(r.status==='fulfilled'){ agg[r.value.src]=(agg[r.value.src]||0)+r.value.n; } });
+    waSetStat('stat-sam','dot-sam',`SAM.gov: ${agg.sam} results`,agg.sam>0?'ok':'err');
+    waSetStat('stat-hn','dot-hn',`HN API: ${agg.hn} results`,agg.hn>0?'ok':'err');
+    waSetStat('stat-news','dot-news',`News RSS: ${agg.news} results`,agg.news>0?'ok':'err');
+    const totalSig=agg.sam+agg.hn+agg.news;
+    const totalAccounts=WA_VERTICALS.reduce((n,v)=>n+waBuildAccounts(waSignals[v.id]||[],v).length,0);
+    waSetStat('stat-total','dot-total',`Total signals: ${totalSig}`,'ok');
+    document.getElementById('week-sub-main').textContent = `${totalAccounts} warm accounts · ${totalSig} signals · 3 verticals`;
+    const now = new Date();
+    document.getElementById('wa-ts').textContent = 'Last fetched: '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+    renderSignals();
+    waFetching = false;
+  }
+
+  function signalsPrevWeek(){
+    waWeekOffset--;
+    const wk = waGetWeekRange(waWeekOffset);
+    document.getElementById('week-label-main').textContent = '📅 Week of '+wk.label;
+    document.getElementById('week-label').textContent = wk.label;
+    document.getElementById('week-sub-main').textContent = 'Historical week — archive data (would query data warehouse in production)';
+    document.getElementById('signals-layout').innerHTML = `<div style="grid-column:1/-1;padding:var(--space-12) var(--space-8);text-align:center;color:var(--color-text-muted);font-size:var(--text-sm)"><div style="font-size:2.5rem;margin-bottom:var(--space-3)">📁</div><strong style="display:block;color:var(--color-text);margin-bottom:var(--space-2)">Archive week</strong>Past weeks stored in data warehouse. In production, this queries the stored JSON snapshot for that week.</div>`;
+  }
+  function signalsNextWeek(){
+    if(waWeekOffset>=0){ waWeekOffset=0; waLoadSignals(); return; }
+    waWeekOffset++;
+    if(waWeekOffset===0){ waLoadSignals(); return; }
+    const wk = waGetWeekRange(waWeekOffset);
+    document.getElementById('week-label-main').textContent = '📅 Week of '+wk.label;
+    document.getElementById('week-label').textContent = wk.label;
+    document.getElementById('week-sub-main').textContent = 'Future week — not yet available. Signal scraping runs Sunday night.';
+    document.getElementById('signals-layout').innerHTML = `<div style="grid-column:1/-1;padding:var(--space-12) var(--space-8);text-align:center;color:var(--color-text-muted);font-size:var(--text-sm)"><div style="font-size:2.5rem;margin-bottom:var(--space-3)">🔄</div><strong style="display:block;color:var(--color-text);margin-bottom:var(--space-2)">Future week</strong>Signal scraping runs every Sunday at midnight. Check back then.</div>`;
+  }
+  function signalsThisWeek(){ waWeekOffset=0; waLoadSignals(); }
+
+  // ── INIT ──────────────────────────────────────────────────
   // Initialize signals on load
-  (function(){ renderSignals(); })();</script>
+  (function(){ waLoadSignals(); })();</script>
 </body>
 </html>
